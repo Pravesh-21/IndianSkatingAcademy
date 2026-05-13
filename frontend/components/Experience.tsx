@@ -165,7 +165,11 @@ function IntegratedSkateWheel({ scrollRef }: { scrollRef: RefObject<{ progress: 
       {/* Bearing glow ring */}
       <mesh position={[0, 0, 0]}>
         <torusGeometry args={[1.35, 0.02, 8, 64]} />
-        <meshStandardMaterial color="#00C2FF" emissive="#00C2FF" emissiveIntensity={0.5} />
+        <meshStandardMaterial
+          color="#00C2FF"
+          emissive="#00C2FF"
+          emissiveIntensity={0.5}
+/>
       </mesh>
       
       {/* Center bearing hub */}
