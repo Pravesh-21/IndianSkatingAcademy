@@ -100,7 +100,8 @@ function Particles() {
       blending={THREE.AdditiveBlending}
     />
   </points>
-);
+  );
+}
 
 function SkateWheel({ scrollRef }: { scrollRef: RefObject<{ progress: number; velocity: number }> }) {
   const groupRef = useRef<THREE.Group>(null);
