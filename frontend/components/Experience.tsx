@@ -103,58 +103,76 @@ function Particles() {
   );
 }
 
-function SkateWheel({ scrollRef }: { scrollRef: RefObject<{ progress: number; velocity: number }> }) {
+function IntegratedSkateWheel({ scrollRef }: { scrollRef: RefObject<{ progress: number; velocity: number }> }) {
   const groupRef = useRef<THREE.Group>(null);
   const wheelRef = useRef<THREE.Mesh>(null);
+  const bearingBallsRef = useRef<THREE.Group>(null);
 
   useFrame(() => {
     if (!groupRef.current || !scrollRef.current) return;
     const progress = scrollRef.current.progress;
     const velocity = Math.abs(scrollRef.current.velocity);
-    const riseProgress = Math.max(0, Math.min(1, (progress - 0.02) / 0.2));
-    groupRef.current.position.y = -6 + riseProgress * 6;
+    
+    // Keep wheel visible during scroll, positioned in center
     groupRef.current.visible = progress > 0.01 && progress < 0.35;
+    
+    // Rotate outer wheel
     if (wheelRef.current) wheelRef.current.rotation.x += 0.01 + velocity * 0.05;
+    
+    // Rotate bearing balls
+    if (bearingBallsRef.current) bearingBallsRef.current.rotation.z += 0.003;
   });
 
   return (
-    <group ref={groupRef} position={[0, -6, 0]}>
+    <group ref={groupRef} position={[0, 0, 0]}>
+      {/* Outer wheel rim */}
       <mesh ref={wheelRef} rotation={[0, 0, Math.PI / 2]}>
         <torusGeometry args={[2.5, 0.6, 32, 64]} />
         <meshStandardMaterial color="#1a1a2a" roughness={0.7} metalness={0.1} />
       </mesh>
+      
+      {/* Wheel hub/bearing housing */}
       <mesh rotation={[0, 0, Math.PI / 2]}>
         <cylinderGeometry args={[1.2, 1.2, 0.4, 32]} />
         <meshStandardMaterial color="#C8D0E0" roughness={0.1} metalness={0.95} envMapIntensity={2} />
       </mesh>
-      <mesh rotation={[0, 0, Math.PI / 2]}>
-        <cylinderGeometry args={[0.5, 0.5, 0.5, 32]} />
-        <meshStandardMaterial color="#00C2FF" roughness={0.2} metalness={0.8} emissive="#00C2FF" emissiveIntensity={0.3} />
+      
+      {/* Bearing outer ring */}
+      <mesh position={[0, 0, 0]}>
+        <torusGeometry args={[2, 0.25, 16, 64]} />
+        <meshStandardMaterial color="#8892A4" roughness={0.15} metalness={0.95} envMapIntensity={2} />
       </mesh>
-    </group>
-  );
-}
-
-function BearingGeometry() {
-  const ballsRef = useRef<THREE.Group>(null);
-  useFrame(() => { if (ballsRef.current) ballsRef.current.rotation.z += 0.003; });
-
-  return (
-    <group position={[0, 0, -5]}>
-      <mesh><torusGeometry args={[2, 0.25, 16, 64]} /><meshStandardMaterial color="#8892A4" roughness={0.15} metalness={0.95} envMapIntensity={2} transparent opacity={0.4} /></mesh>
-      <mesh><torusGeometry args={[0.7, 0.2, 16, 64]} /><meshStandardMaterial color="#9AA2B4" roughness={0.1} metalness={0.95} envMapIntensity={2} transparent opacity={0.4} /></mesh>
-      <group ref={ballsRef}>
+      
+      {/* Bearing inner ring */}
+      <mesh position={[0, 0, 0]}>
+        <torusGeometry args={[0.7, 0.2, 16, 64]} />
+        <meshStandardMaterial color="#9AA2B4" roughness={0.1} metalness={0.95} envMapIntensity={2} />
+      </mesh>
+      
+      {/* Bearing balls */}
+      <group ref={bearingBallsRef} position={[0, 0, 0]}>
         {Array.from({ length: 8 }).map((_, i) => {
           const angle = (i / 8) * Math.PI * 2;
           return (
             <mesh key={i} position={[Math.cos(angle) * 1.35, Math.sin(angle) * 1.35, 0]}>
               <sphereGeometry args={[0.28, 32, 32]} />
-              <meshStandardMaterial color="#D0D8E8" roughness={0.05} metalness={1} envMapIntensity={3} transparent opacity={0.4} />
+              <meshStandardMaterial color="#D0D8E8" roughness={0.05} metalness={1} envMapIntensity={3} />
             </mesh>
           );
         })}
       </group>
-      <mesh><torusGeometry args={[1.35, 0.02, 8, 64]} /><meshBasicMaterial color="#00C2FF" transparent opacity={0.15} /></mesh>
+      
+      {/* Bearing glow ring */}
+      <mesh position={[0, 0, 0]}>
+        <torusGeometry args={[1.35, 0.02, 8, 64]} />
+        <meshBasicMaterial color="#00C2FF" emissive="#00C2FF" emissiveIntensity={0.5} />
+      </mesh>
+      
+      {/* Center bearing hub */}
+      <mesh rotation={[0, 0, Math.PI / 2]} position={[0, 0, 0]}>
+        <cylinderGeometry args={[0.5, 0.5, 0.5, 32]} />
+        <meshStandardMaterial color="#00C2FF" roughness={0.2} metalness={0.8} emissive="#00C2FF" emissiveIntensity={0.3} />
+      </mesh>
     </group>
   );
 }
@@ -200,32 +218,6 @@ function RinkEnvironment() {
   );
 }
 
-function FloatingTrophies() {
-  return (
-    <group position={[0, 3, -22]}>
-      <Float speed={1.5} rotationIntensity={0.5} floatIntensity={1}>
-        <group position={[-3, 0, 0]}>
-          <mesh><cylinderGeometry args={[0.3, 0.5, 1, 32]} /><meshStandardMaterial color="#FFD700" roughness={0.2} metalness={0.9} envMapIntensity={2} /></mesh>
-          <mesh position={[0, -0.7, 0]}><cylinderGeometry args={[0.4, 0.4, 0.2, 32]} /><meshStandardMaterial color="#FFD700" roughness={0.15} metalness={0.95} /></mesh>
-          <mesh position={[0, -0.45, 0]}><cylinderGeometry args={[0.08, 0.08, 0.3, 16]} /><meshStandardMaterial color="#FFD700" roughness={0.2} metalness={0.9} /></mesh>
-        </group>
-      </Float>
-      <Float speed={2} rotationIntensity={0.8} floatIntensity={1.2}>
-        <group position={[0, 0.5, 1]}>
-          <mesh><torusGeometry args={[0.5, 0.08, 16, 32]} /><meshStandardMaterial color="#C0C0C0" roughness={0.1} metalness={1} envMapIntensity={3} /></mesh>
-          <mesh><cylinderGeometry args={[0.4, 0.4, 0.05, 32]} /><meshStandardMaterial color="#FFD700" roughness={0.15} metalness={0.95} /></mesh>
-        </group>
-      </Float>
-      <Float speed={1.8} rotationIntensity={0.6} floatIntensity={0.8}>
-        <group position={[3, -0.5, 0.5]}>
-          <mesh><cylinderGeometry args={[0.25, 0.4, 0.8, 32]} /><meshStandardMaterial color="#CD7F32" roughness={0.25} metalness={0.85} envMapIntensity={2} /></mesh>
-          <mesh position={[0, -0.55, 0]}><cylinderGeometry args={[0.35, 0.35, 0.15, 32]} /><meshStandardMaterial color="#CD7F32" roughness={0.2} metalness={0.9} /></mesh>
-        </group>
-      </Float>
-    </group>
-  );
-}
-
 export default function Experience({ scrollRef }: ExperienceProps) {
   return (
     <>
@@ -236,11 +228,9 @@ export default function Experience({ scrollRef }: ExperienceProps) {
       <pointLight position={[0, 3, 5]} color="#00C2FF" intensity={3} distance={20} />
       <Particles />
       <Stars radius={50} depth={80} count={3000} factor={3} saturation={0} fade speed={0.5} />
-      <SkateWheel scrollRef={scrollRef} />
-      <BearingGeometry />
+      <IntegratedSkateWheel scrollRef={scrollRef} />
       <BearingFlash scrollRef={scrollRef} />
       <RinkEnvironment />
-      {/* Removed: FloatingTrophies (Spline placeholder objects) */}
       <fog attach="fog" args={['#0A0A0F', 15, 60]} />
       <EffectComposer multisampling={4}>
         <Bloom luminanceThreshold={0.8} luminanceSmoothing={0.3} intensity={0.6} mipmapBlur />
