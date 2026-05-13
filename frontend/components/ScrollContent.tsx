@@ -95,6 +95,22 @@ export default function ScrollContent() {
 
   return (
     <>
+      {/* NAVIGATION */}
+      <nav className="nav">
+        <a href="#hero" className="nav-logo">ISA</a>
+        <div className="nav-links">
+          <a href="#about">About</a>
+          <a href="#programs">Programs</a>
+          <a href="#join">Join</a>
+        </div>
+      </nav>
+
+      {/* SCROLL INDICATOR */}
+      <div className="scroll-indicator">
+        <span className="scroll-indicator-text">Scroll</span>
+        <div className="scroll-indicator-arrow" />
+      </div>
+
       {/* HERO */}
       <section className="hero" id="hero">
         <h1 className="hero-title">ISA</h1>

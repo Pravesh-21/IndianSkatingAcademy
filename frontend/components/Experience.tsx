@@ -140,16 +140,16 @@ function BearingGeometry() {
   useFrame(() => { if (ballsRef.current) ballsRef.current.rotation.z += 0.003; });
 
   return (
-    <group position={[0, 0, 0]}>
-      <mesh><torusGeometry args={[2, 0.25, 16, 64]} /><meshStandardMaterial color="#8892A4" roughness={0.15} metalness={0.95} envMapIntensity={2} /></mesh>
-      <mesh><torusGeometry args={[0.7, 0.2, 16, 64]} /><meshStandardMaterial color="#9AA2B4" roughness={0.1} metalness={0.95} envMapIntensity={2} /></mesh>
+    <group position={[0, 0, -5]}>
+      <mesh><torusGeometry args={[2, 0.25, 16, 64]} /><meshStandardMaterial color="#8892A4" roughness={0.15} metalness={0.95} envMapIntensity={2} transparent opacity={0.4} /></mesh>
+      <mesh><torusGeometry args={[0.7, 0.2, 16, 64]} /><meshStandardMaterial color="#9AA2B4" roughness={0.1} metalness={0.95} envMapIntensity={2} transparent opacity={0.4} /></mesh>
       <group ref={ballsRef}>
         {Array.from({ length: 8 }).map((_, i) => {
           const angle = (i / 8) * Math.PI * 2;
           return (
             <mesh key={i} position={[Math.cos(angle) * 1.35, Math.sin(angle) * 1.35, 0]}>
               <sphereGeometry args={[0.28, 32, 32]} />
-              <meshStandardMaterial color="#D0D8E8" roughness={0.05} metalness={1} envMapIntensity={3} />
+              <meshStandardMaterial color="#D0D8E8" roughness={0.05} metalness={1} envMapIntensity={3} transparent opacity={0.4} />
             </mesh>
           );
         })}
@@ -184,6 +184,7 @@ function RinkEnvironment() {
         <planeGeometry args={[40, 40]} />
         <MeshReflectorMaterial blur={[300, 100]} resolution={1024} mixBlur={1} mixStrength={40} roughness={0.8} depthScale={1.2} minDepthThreshold={0.4} maxDepthThreshold={1.4} color="#0A0A15" metalness={0.5} mirror={0.5} />
       </mesh>
+      {/* Enhanced perspective grid with depth fade */}
       <gridHelper args={[40, 40, '#00C2FF', '#0A0A2A']} position={[0, 0.01, 0]} />
       {[-18, 18].map((x) => (<mesh key={x} position={[x, 3, 0]}><boxGeometry args={[0.2, 6, 40]} /><meshStandardMaterial color="#12121A" roughness={0.8} metalness={0.2} /></mesh>))}
       {[-18, 18].map((x) => (<mesh key={`n-${x}`} position={[x, 0.3, 0]}><boxGeometry args={[0.05, 0.05, 40]} /><meshBasicMaterial color="#00C2FF" /></mesh>))}
@@ -239,7 +240,7 @@ export default function Experience({ scrollRef }: ExperienceProps) {
       <BearingGeometry />
       <BearingFlash scrollRef={scrollRef} />
       <RinkEnvironment />
-      <FloatingTrophies />
+      {/* Removed: FloatingTrophies (Spline placeholder objects) */}
       <fog attach="fog" args={['#0A0A0F', 15, 60]} />
       <EffectComposer multisampling={4}>
         <Bloom luminanceThreshold={0.8} luminanceSmoothing={0.3} intensity={0.6} mipmapBlur />

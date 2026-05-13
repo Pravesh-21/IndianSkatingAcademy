@@ -1,11 +1,18 @@
 import type { Metadata } from "next";
-import { Outfit, DM_Sans } from "next/font/google";
+import { Outfit, DM_Sans, Bebas_Neue } from "next/font/google";
 import "./globals.css";
 
 const outfit = Outfit({
   subsets: ["latin"],
   variable: "--font-display",
   weight: ["400", "500", "600", "700", "800", "900"],
+  display: "swap",
+});
+
+const bebasNeue = Bebas_Neue({
+  subsets: ["latin"],
+  variable: "--font-wordmark",
+  weight: ["400"],
   display: "swap",
 });
 
@@ -41,7 +48,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${outfit.variable} ${dmSans.variable}`}>
+    <html lang="en" className={`${outfit.variable} ${dmSans.variable} ${bebasNeue.variable}`}>
       <body>{children}</body>
     </html>
   );

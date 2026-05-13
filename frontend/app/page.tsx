@@ -19,6 +19,27 @@ export default function Home() {
   useEffect(() => {
     let animationId: number;
 
+    const animateTagline = async () => {
+      const gsapModule = await import('gsap');
+      const gsap = gsapModule.default;
+      
+      const taglineEl = document.querySelector('.hero-tagline');
+      if (!taglineEl) return;
+      
+      const words = taglineEl.textContent?.split(' ') || [];
+      taglineEl.innerHTML = words.map(word => `<span class="tagline-word">${word}</span>`).join(' ');
+      
+      const wordSpans = taglineEl.querySelectorAll('.tagline-word');
+      gsap.set(wordSpans, { opacity: 0 });
+      gsap.to(wordSpans, {
+        opacity: 1,
+        stagger: 0.15,
+        duration: 0.6,
+        delay: 1.2,
+        ease: 'power2.out'
+      });
+    };
+
     const initScroll = async () => {
       const gsapModule = await import('gsap');
       const gsap = gsapModule.default;
@@ -49,6 +70,7 @@ export default function Home() {
     };
 
     initScroll();
+    animateTagline();
 
     // Simulate asset loading (preloader runs for 3s)
     const timer = setTimeout(() => setLoaded(true), 3200);

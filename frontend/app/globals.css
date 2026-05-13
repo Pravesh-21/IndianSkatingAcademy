@@ -22,6 +22,7 @@
   /* Typography */
   --font-display: 'Outfit', sans-serif;
   --font-body: 'DM Sans', sans-serif;
+  --font-wordmark: 'Bebas Neue', sans-serif;
 
   /* Spacing */
   --section-pad: clamp(60px, 8vw, 120px);
@@ -166,48 +167,73 @@ ul, ol { list-style: none; }
   position: fixed;
   top: 0;
   left: 0;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  border: 2px solid var(--blue);
+  width: 40px;
+  height: 40px;
   pointer-events: none;
   z-index: 9999;
   transform: translate(-50%, -50%);
-  transition: width 0.3s var(--ease-out-expo),
-              height 0.3s var(--ease-out-expo),
-              border-color 0.3s,
-              background 0.3s;
-  mix-blend-mode: difference;
-}
-
-.custom-cursor::after {
-  content: '';
-  position: absolute;
-  inset: 3px;
-  border-radius: 50%;
-  background: var(--blue);
-  opacity: 0.3;
+  perspective: 1000px;
 }
 
 .custom-cursor.hovering {
-  width: 48px;
-  height: 48px;
-  border-color: var(--orange);
-  background: rgba(255, 92, 26, 0.1);
+  filter: drop-shadow(0 0 20px #00C2FF) !important;
 }
 
 .cursor-dot {
+  display: none;
+}
+
+/* --- Navigation --- */
+.nav {
   position: fixed;
   top: 0;
   left: 0;
-  width: 6px;
-  height: 6px;
-  background: var(--blue);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 10000;
-  transform: translate(-50%, -50%);
-  box-shadow: 0 0 10px var(--blue-glow);
+  right: 0;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--section-pad);
+  z-index: 500;
+  background: rgba(10, 10, 15, 0.7);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(0, 194, 255, 0.1);
+  pointer-events: all;
+}
+
+.nav-logo {
+  font-family: var(--font-wordmark);
+  font-size: 24px;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  color: var(--white);
+  text-decoration: none;
+  transition: color 0.3s var(--ease-out-expo);
+}
+
+.nav-logo:hover {
+  color: var(--blue);
+}
+
+.nav-links {
+  display: flex;
+  gap: 40px;
+  align-items: center;
+}
+
+.nav-links a {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: var(--chrome);
+  text-decoration: none;
+  transition: color 0.3s var(--ease-out-expo);
+  text-transform: uppercase;
+}
+
+.nav-links a:hover {
+  color: var(--blue);
 }
 
 /* --- Sections --- */
@@ -238,10 +264,10 @@ ul, ol { list-style: none; }
 }
 
 .hero-title {
-  font-family: var(--font-display);
+  font-family: var(--font-wordmark);
   font-size: clamp(80px, 18vw, 280px);
-  font-weight: 900;
-  letter-spacing: 0.08em;
+  font-weight: 400;
+  letter-spacing: 0.15em;
   line-height: 0.9;
   background: linear-gradient(180deg, var(--white) 0%, var(--chrome) 100%);
   -webkit-background-clip: text;
@@ -256,6 +282,7 @@ ul, ol { list-style: none; }
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--blue), transparent);
   margin: 24px auto;
+  display: none; /* Removed broken preloader-style lines */
 }
 
 .hero-tagline {
@@ -306,7 +333,7 @@ ul, ol { list-style: none; }
 .btn-pill:hover {
   border-color: var(--blue);
   background: rgba(0, 194, 255, 0.1);
-  box-shadow: 0 0 30px var(--blue-glow), inset 0 0 30px rgba(0, 194, 255, 0.05);
+  box-shadow: 0 0 24px #00C2FF, 0 0 48px rgba(0, 194, 255, 0.4), inset 0 0 30px rgba(0, 194, 255, 0.05);
   transform: translateY(-2px);
 }
 
@@ -319,6 +346,46 @@ ul, ol { list-style: none; }
 
 .btn-pill:hover .arrow {
   transform: translateX(4px);
+}
+
+/* --- Scroll Indicator --- */
+.scroll-indicator {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 100;
+  pointer-events: none;
+  animation: fadeOutScroll 0.6s ease-out 3s forwards;
+}
+
+.scroll-indicator-text {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--chrome);
+}
+
+.scroll-indicator-arrow {
+  width: 2px;
+  height: 20px;
+  background: linear-gradient(180deg, var(--blue), transparent);
+  animation: bounceDown 1.5s ease-in-out infinite;
+}
+
+@keyframes bounceDown {
+  0%, 100% { transform: translateY(0); opacity: 0.5; }
+  50% { transform: translateY(8px); opacity: 1; }
+}
+
+@keyframes fadeOutScroll {
+  to { opacity: 0; pointer-events: none; }
 }
 
 /* --- About / Rink Section --- */
