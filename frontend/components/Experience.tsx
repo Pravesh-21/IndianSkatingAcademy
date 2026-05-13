@@ -83,14 +83,24 @@ function Particles() {
   });
 
   return (
-    <points ref={meshRef}>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} />
-      </bufferGeometry>
-      <pointsMaterial size={0.05} color="#00C2FF" transparent opacity={0.5} sizeAttenuation depthWrite={false} blending={THREE.AdditiveBlending} />
-    </points>
-  );
-}
+  <points ref={meshRef}>
+    <bufferGeometry>
+      <bufferAttribute
+        args={[positions, 3]}
+      />
+    </bufferGeometry>
+
+    <pointsMaterial
+      size={0.05}
+      color="#00C2FF"
+      transparent
+      opacity={0.5}
+      sizeAttenuation
+      depthWrite={false}
+      blending={THREE.AdditiveBlending}
+    />
+  </points>
+);
 
 function SkateWheel({ scrollRef }: { scrollRef: RefObject<{ progress: number; velocity: number }> }) {
   const groupRef = useRef<THREE.Group>(null);
