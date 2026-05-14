@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Preloader from '@/components/Preloader';
 import gsap from 'gsap';
 import { useGSAPScroll } from '@/hooks/useGSAPScroll';
-import { programs } from '@/lib/data';
+import { programs, coaches } from '@/lib/data';
 import Link from 'next/link';
 
 export default function Home() {
@@ -70,13 +70,13 @@ export default function Home() {
         </section>
 
         {/* INTRODUCTION */}
-        <section className="rink-section section" id="intro" style={{ alignItems: 'center', textAlign: 'center', padding: '120px 20px' }}>
-          <div className="rink-content" style={{ maxWidth: '900px', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <section className="rink-section section" id="intro" style={{ padding: '0' }}>
+          <div className="rink-content full-width" style={{ padding: '120px 20px' }}>
             <p className="section-label reveal" style={{ marginBottom: '16px' }}>The Academy</p>
             <h2 className="section-heading reveal" style={{ fontSize: 'clamp(40px, 5vw, 72px)', marginBottom: '32px' }}>
               Master the Art of <span className="accent">Velocity</span>
             </h2>
-            <p className="section-body reveal" style={{ fontSize: '18px', lineHeight: '1.8', color: 'var(--chrome)', marginBottom: '48px', maxWidth: '700px' }}>
+            <p className="section-body reveal" style={{ fontSize: '18px', lineHeight: '1.8', color: 'var(--chrome)', marginBottom: '48px' }}>
               We don&apos;t just teach skating; we engineer champions. Indian Skating Academy is the country&apos;s premier institution dedicated to the absolute mastery of inline sports. From the precise mechanics of speed skating to the flawless execution of artistic freestyle, we provide an elite training ecosystem designed to push you beyond your limits.
             </p>
             <div className="hero-cta reveal" style={{ opacity: 1, transition: 'none', display: 'flex', justifyContent: 'center', gap: '24px', flexWrap: 'wrap' }}>
@@ -111,16 +111,27 @@ export default function Home() {
             </h2>
           </div>
           <div className="programs-grid">
-            {programs.slice(0, 3).map((prog, i) => (
-              <div key={prog.name} className="program-card reveal">
-                <div className="program-icon">{prog.icon}</div>
-                <h3 className="program-name">{prog.name}</h3>
-                <div className="program-meta">
-                  <span>{prog.ages}</span>
-                  <span>{prog.coach}</span>
+            {programs.slice(0, 3).map((prog, i) => {
+              const coach = coaches.find(c => c.name === prog.coach);
+              return (
+                <div key={prog.name} className="program-card reveal">
+                  <div className="program-icon">{prog.icon}</div>
+                  <h3 className="program-name">{prog.name}</h3>
+                  <div className="program-meta">
+                    <span>{prog.ages}</span>
+                    <div className="coach-preview" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '10px', justifyContent: 'center' }}>
+                      {coach?.image && (
+                        <div className="coach-thumb" style={{ width: '28px', height: '28px', borderRadius: '50%', overflow: 'hidden', border: '1px solid var(--blue-glow)' }}>
+                          <img src={coach.image} alt={coach.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                      )}
+                      <span style={{ margin: 0 }}>{prog.coach}</span>
+                    </div>
+                  </div>
+                  <div className="program-action">Explore Discipline</div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
           <div className="hero-cta reveal" style={{ marginTop: '60px', opacity: 1, transition: 'none' }}>
             <Link href="/programs" className="btn-pill">

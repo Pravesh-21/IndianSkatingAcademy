@@ -17,17 +17,28 @@ export default function ProgramsPage() {
           </h2>
         </div>
         <div className="programs-grid">
-          {programs.map((prog, i) => (
-            <div key={prog.name} className="program-card reveal">
-              <div className="program-icon">{prog.icon}</div>
-              <h3 className="program-name">{prog.name}</h3>
-              <div className="program-meta">
-                <span>{prog.ages}</span>
-                <span>{prog.coach}</span>
-                <span>{prog.days}</span>
+          {programs.map((prog, i) => {
+            const coach = coaches.find(c => c.name === prog.coach);
+            return (
+              <div key={prog.name} className="program-card reveal">
+                <div className="program-icon">{prog.icon}</div>
+                <h3 className="program-name">{prog.name}</h3>
+                <div className="program-meta">
+                  <span>{prog.ages}</span>
+                  <div className="coach-preview" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
+                    {coach?.image && (
+                      <div className="coach-thumb" style={{ width: '24px', height: '24px', borderRadius: '50%', overflow: 'hidden', border: '1px solid var(--blue-glow)' }}>
+                        <img src={coach.image} alt={coach.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </div>
+                    )}
+                    <span style={{ margin: 0 }}>{prog.coach}</span>
+                  </div>
+                  <span>{prog.days}</span>
+                </div>
+                <div className="program-action">View Schedule</div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
@@ -41,7 +52,11 @@ export default function ProgramsPage() {
           {coaches.map((coach, i) => (
             <div key={coach.name} className="coach-card reveal">
               <div className="coach-image">
-                <div className="coach-avatar">{coach.initials}</div>
+                {coach.image ? (
+                  <img src={coach.image} alt={coach.name} className="coach-portrait" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <div className="coach-avatar">{coach.initials}</div>
+                )}
               </div>
               <div className="coach-info">
                 <h3 className="coach-name">{coach.name}</h3>

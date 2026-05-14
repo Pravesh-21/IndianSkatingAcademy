@@ -683,6 +683,20 @@ ul, ol { list-style: none; }
   overflow: hidden;
 }
 
+.rink-content.full-width {
+  max-width: 100%;
+  margin: 0;
+  width: 100%;
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  background: rgba(12, 12, 22, 0.3);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .rink-content::before {
   content: '';
   position: absolute;
@@ -769,41 +783,91 @@ ul, ol { list-style: none; }
 }
 
 .program-card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(16px) saturate(1.2);
-  -webkit-backdrop-filter: blur(16px) saturate(1.2);
-  border: 1px solid var(--glass-border);
-  border-radius: 20px;
-  padding: 40px 32px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+  backdrop-filter: blur(20px) saturate(1.8);
+  -webkit-backdrop-filter: blur(20px) saturate(1.8);
+  border: 1px solid rgba(0, 194, 255, 0.1);
+  border-radius: 24px;
+  padding: 48px 36px;
   position: relative;
   overflow: hidden;
-  transition: border-color 0.5s var(--ease-out-expo), box-shadow 0.5s var(--ease-out-expo), background 0.5s var(--ease-out-expo), transform 0.5s var(--ease-out-expo);
+  transition: all 0.6s var(--ease-out-expo);
   opacity: 0;
   transform: translateY(40px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.3),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+/* Glowing border effect on hover */
+.program-meta span::before {
+  content: '•';
+  color: var(--blue);
+  margin-right: 8px;
+  font-size: 18px;
+  vertical-align: middle;
+}
+
+.program-action {
+  margin-top: 24px;
+  padding-top: 20px;
+  width: 100%;
+  border-top: 1px solid rgba(0, 194, 255, 0.1);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--blue);
+  opacity: 0.5;
+  transition: all 0.4s var(--ease-out-expo);
+}
+
+.program-card:hover .program-action {
+  opacity: 1;
+  letter-spacing: 0.3em;
+  color: var(--blue-bright);
 }
 
 .program-card::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--blue), var(--green), transparent);
+  inset: 0;
+  padding: 1.5px; /* Border thickness */
+  border-radius: 24px;
+  background: linear-gradient(135deg, transparent, rgba(0, 194, 255, 0.5), transparent);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
   opacity: 0;
-  transition: opacity 0.4s;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
 }
 
+/* Light sweep animation */
 .program-card::after {
   content: '';
   position: absolute;
-  bottom: -60px;
-  left: -60px;
-  width: 140px;
-  height: 140px;
-  background: radial-gradient(circle, rgba(0, 194, 255, 0.04) 0%, transparent 70%);
-  transition: opacity 0.5s;
-  opacity: 0;
+  top: -50%;
+  left: -150%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(0, 194, 255, 0.1),
+    rgba(255, 255, 255, 0.1),
+    rgba(0, 194, 255, 0.1),
+    transparent
+  );
+  transform: rotate(45deg);
+  transition: all 0.8s var(--ease-out-expo);
+  pointer-events: none;
+  z-index: 2;
 }
 
 .program-card:hover {

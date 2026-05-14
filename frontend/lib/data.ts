@@ -1,8 +1,8 @@
 export const programs = [
-  { icon: '⚡', name: 'Speed Skating', ages: 'Ages 8–25', coach: 'Coach Gajendra Purohit', days: 'Mon · Wed · Fri' },
-  { icon: '🎭', name: 'Artistic Freestyle', ages: 'Ages 6–18', coach: 'Coach Uzair', days: 'Tue · Thu · Sat' },
-  { icon: '🔀', name: 'Slalom', ages: 'Ages 10–22', coach: 'Coach Neer', days: 'Mon · Wed · Sat' },
-  { icon: '🔥', name: 'Aggressive / Stunt', ages: 'Ages 12–25', coach: 'Coach Ravi Kumar', days: 'Tue · Fri · Sun' },
+  { icon: '⚡', name: 'Speed Skating', ages: 'Ages 8–25', coach: 'Arjun Mehta', days: 'Mon · Wed · Fri' },
+  { icon: '🎭', name: 'Artistic Freestyle', ages: 'Ages 6–18', coach: 'Priya Sharma', days: 'Tue · Thu · Sat' },
+  { icon: '🔀', name: 'Slalom', ages: 'Ages 10–22', coach: 'Vikram Singh', days: 'Mon · Wed · Sat' },
+  { icon: '🔥', name: 'Aggressive / Stunt', ages: 'Ages 12–25', coach: 'Ravi Kumar', days: 'Tue · Fri · Sun' },
 ];
 
 export const stats = [
@@ -13,9 +13,10 @@ export const stats = [
 ];
 
 export const coaches = [
-  { initials: 'AM', name: 'Arjun Mehta', role: 'Head Coach · Speed Skating', bio: 'Former national champion with 15 years of competitive experience. Trained 40+ state-level athletes.' },
-  { initials: 'PS', name: 'Priya Sharma', role: 'Lead · Artistic Freestyle', bio: 'International medalist and choreographer. Specializes in artistic expression and technical precision.' },
-  { initials: 'VS', name: 'Vikram Singh', role: 'Senior Coach · Slalom', bio: 'Asia-level slalom champion. Pioneer of modern slalom techniques in Indian competitive skating.' },
+  { initials: 'AM', name: 'Arjun Mehta', image: '/images/coach_arjun.png', role: 'Head Coach · Speed Skating', bio: 'Former national champion with 15 years of competitive experience. Trained 40+ state-level athletes.' },
+  { initials: 'PS', name: 'Priya Sharma', image: '/images/coach_priya.png', role: 'Lead · Artistic Freestyle', bio: 'International medalist and choreographer. Specializes in artistic expression and technical precision.' },
+  { initials: 'VS', name: 'Vikram Singh', image: '/images/coach_vikram.png', role: 'Senior Coach · Slalom', bio: 'Asia-level slalom champion. Pioneer of modern slalom techniques in Indian competitive skating.' },
+  { initials: 'RK', name: 'Ravi Kumar', image: '/images/coach_ravi.png', role: 'Pro · Aggressive Skating', bio: 'Specialist in street and park disciplines. Known for technical rail tricks and high-impact aerials.' },
 ];
 
 export const benefits = [
