@@ -183,8 +183,7 @@ function SpeedStreaks() {
       <bufferGeometry>
         <bufferAttribute 
         attach="attributes-position" 
-        count={count * 2} 
-        array={positions} itemSize={3} />
+        args={[positions, 3]} />
       </bufferGeometry>
       <lineBasicMaterial color="#00ff88" transparent opacity={0.3} depthWrite={false} blending={THREE.AdditiveBlending} />
     </lineSegments>
