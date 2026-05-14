@@ -1,25 +1,38 @@
 import type { Metadata } from "next";
-import { Outfit, DM_Sans, Bebas_Neue } from "next/font/google";
+import { Space_Grotesk, Syne, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-const outfit = Outfit({
+/* ── Premium Font Stack ── */
+
+// Display / headings — bold, editorial, high-impact
+const syne = Syne({
   subsets: ["latin"],
   variable: "--font-display",
-  weight: ["400", "500", "600", "700", "800", "900"],
+  weight: ["400", "500", "600", "700", "800"],
   display: "swap",
 });
 
-const bebasNeue = Bebas_Neue({
+// Wordmark / hero title — geometric, modern
+const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
   variable: "--font-wordmark",
-  weight: ["400"],
+  weight: ["300", "400", "500", "600", "700"],
   display: "swap",
 });
 
-const dmSans = DM_Sans({
+// Body text — clean, highly legible
+const inter = Inter({
   subsets: ["latin"],
   variable: "--font-body",
-  weight: ["400", "500", "700"],
+  weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
+});
+
+// Monospace — tech labels, specs, code
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  weight: ["300", "400", "500"],
   display: "swap",
 });
 
@@ -42,14 +55,26 @@ export const metadata: Metadata = {
   },
 };
 
+import Navigation from "@/components/Navigation";
+import Footer from "@/components/Footer";
+import SmoothScroll from "@/components/SmoothScroll";
+import CustomCursor from "@/components/CustomCursor";
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${outfit.variable} ${dmSans.variable} ${bebasNeue.variable}`}>
-      <body>{children}</body>
+    <html lang="en" className={`${syne.variable} ${spaceGrotesk.variable} ${inter.variable} ${jetbrainsMono.variable}`}>
+      <body>
+        <SmoothScroll>
+          <CustomCursor />
+          <Navigation />
+          {children}
+          <Footer />
+        </SmoothScroll>
+      </body>
     </html>
   );
 }
