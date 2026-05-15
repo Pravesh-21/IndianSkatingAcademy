@@ -6,6 +6,7 @@ import gsap from 'gsap';
 import { useGSAPScroll } from '@/hooks/useGSAPScroll';
 import { programs, coaches } from '@/lib/data';
 import Link from 'next/link';
+import BorderGlow from '@/components/BorderGlow';
 
 export default function Home() {
   const [loaded, setLoaded] = useState(false);
@@ -80,13 +81,33 @@ export default function Home() {
               We don&apos;t just teach skating; we engineer champions. Indian Skating Academy is the country&apos;s premier institution dedicated to the absolute mastery of inline sports. From the precise mechanics of speed skating to the flawless execution of artistic freestyle, we provide an elite training ecosystem designed to push you beyond your limits.
             </p>
             <div className="hero-cta reveal" style={{ opacity: 1, transition: 'none', display: 'flex', justifyContent: 'center', gap: '24px', flexWrap: 'wrap' }}>
-              <Link href="/about" className="btn-glow">
-                <span className="btn-glow-text">Discover Our Legacy</span>
-                <span className="btn-glow-arrow">→</span>
-              </Link>
-              <Link href="/programs" className="btn-pill" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(0, 194, 255, 0.2)' }}>
-                Explore Disciplines
-              </Link>
+              <BorderGlow
+                borderRadius={60}
+                glowColor="194 80 50"
+                backgroundColor="transparent"
+                glowRadius={30}
+                colors={['#00C2FF', '#22EE50', '#00C2FF']}
+                edgeSensitivity={20}
+              >
+                <Link href="/about" className="btn-glow" style={{ background: 'transparent', boxShadow: 'none', transform: 'none', border: 'none' }}>
+                  <span className="btn-glow-text">Discover Our Legacy</span>
+                  <span className="btn-glow-arrow">→</span>
+                </Link>
+              </BorderGlow>
+
+              <BorderGlow
+                borderRadius={60}
+                glowColor="194 100 80"
+                backgroundColor="transparent"
+                glowRadius={40}
+                glowIntensity={2.0}
+                colors={['#00C2FF', '#ffffff', '#00C2FF']}
+                edgeSensitivity={30}
+              >
+                <Link href="/programs" className="btn-pill" style={{ background: 'transparent', border: 'none', transform: 'none', margin: 0 }}>
+                  Explore Disciplines
+                </Link>
+              </BorderGlow>
             </div>
           </div>
         </section>
@@ -111,7 +132,7 @@ export default function Home() {
             </h2>
           </div>
           <div className="programs-grid">
-            {programs.slice(0, 3).map((prog, i) => {
+            {programs.slice(0, 4).map((prog, i) => {
               const coach = coaches.find(c => c.name === prog.coach);
               return (
                 <div key={prog.name} className="program-card reveal">

@@ -59,6 +59,7 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import SmoothScroll from "@/components/SmoothScroll";
 import CustomCursor from "@/components/CustomCursor";
+import ClickSpark from "@/components/ClickSpark";
 
 export default function RootLayout({
   children,
@@ -68,12 +69,20 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${syne.variable} ${spaceGrotesk.variable} ${inter.variable} ${jetbrainsMono.variable}`}>
       <body>
-        <SmoothScroll>
-          <CustomCursor />
-          <Navigation />
-          {children}
-          <Footer />
-        </SmoothScroll>
+        <ClickSpark
+          sparkColor="#00C2FF"
+          sparkSize={10}
+          sparkRadius={15}
+          sparkCount={8}
+          duration={400}
+        >
+          <SmoothScroll>
+            <CustomCursor />
+            <Navigation />
+            {children}
+            <Footer />
+          </SmoothScroll>
+        </ClickSpark>
       </body>
     </html>
   );
