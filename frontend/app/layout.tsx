@@ -60,6 +60,7 @@ import Footer from "@/components/Footer";
 import SmoothScroll from "@/components/SmoothScroll";
 import CustomCursor from "@/components/CustomCursor";
 import ClickSpark from "@/components/ClickSpark";
+import Particles from "@/components/Particles";
 
 export default function RootLayout({
   children,
@@ -77,6 +78,11 @@ export default function RootLayout({
           duration={400}
         >
           <SmoothScroll>
+            <div className="static-background">
+              <div className="gradient-glow" />
+            </div>
+            <div className="noise-overlay" />
+            <Particles particleCount={50} particleColor="#00C2FF" speed={0.3} />
             <CustomCursor />
             <Navigation />
             {children}

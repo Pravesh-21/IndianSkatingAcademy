@@ -10,21 +10,27 @@ export default function AboutPage() {
   return (
     <main className="page-wrapper" ref={containerRef as any}>
       {/* ABOUT / RINK */}
+      {/* ABOUT / RINK */}
       <section className="rink-section section" id="about">
-        <div className="rink-content">
-          <p className="section-label reveal">About ISA</p>
-          <h2 className="section-heading reveal">
-            India&apos;s Premier<br /><span className="accent">Inline Skating</span> Academy
-          </h2>
-          <p className="section-body reveal">
-            Founded with a singular vision — to transform inline skating from a recreational activity
-            into a competitive discipline of national pride. ISA trains athletes across speed, artistic,
-            slalom, and aggressive skating with world-class coaching and infrastructure.
-          </p>
-          <p className="section-body reveal">
-            From grassroots programs for children to elite competitive training, we build champions
-            who represent India on the global stage.
-          </p>
+        <div className="rink-grid">
+          <div className="rink-image-wrapper reveal">
+            <img src="/about-skater.png" alt="Indian Skating Academy Action" />
+          </div>
+          <div className="rink-content">
+            <p className="section-label reveal">About ISA</p>
+            <h2 className="section-heading reveal">
+              India&apos;s Premier<br /><span className="accent">Inline Skating</span> Academy
+            </h2>
+            <p className="section-body reveal">
+              Founded with a singular vision — to transform inline skating from a recreational activity
+              into a competitive discipline of national pride. ISA trains athletes across speed, artistic,
+              slalom, and aggressive skating with world-class coaching and infrastructure.
+            </p>
+            <p className="section-body reveal">
+              From grassroots programs for children to elite competitive training, we build champions
+              who represent India on the global stage.
+            </p>
+          </div>
         </div>
       </section>
 
@@ -39,6 +45,7 @@ export default function AboutPage() {
         <div className="benefits-grid">
           {benefits.map((benefit, i) => (
             <div key={benefit.title} className="benefit-card reveal">
+              <span className="benefit-number">0{i + 1}</span>
               <div className="benefit-icon">{benefit.icon}</div>
               <h3 className="benefit-title">{benefit.title}</h3>
               <p className="benefit-desc">{benefit.desc}</p>
