@@ -31,7 +31,7 @@ const ClickSpark: React.FC<ClickSparkProps> = ({
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Particle[]>([]);
-  const requestRef = useRef<number>();
+  const requestRef = useRef<number | undefined>(undefined);
 
   const createParticles = useCallback((x: number, y: number) => {
     for (let i = 0; i < sparkCount; i++) {
@@ -49,7 +49,7 @@ const ClickSpark: React.FC<ClickSparkProps> = ({
     }
   }, [sparkCount, sparkRadius, sparkSize]);
 
-  const animate = useCallback((time: number) => {
+  const animate = useCallback(function loop(time: number) {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -90,7 +90,7 @@ const ClickSpark: React.FC<ClickSparkProps> = ({
       ctx.restore();
     });
 
-    requestRef.current = requestAnimationFrame(animate);
+    requestRef.current = requestAnimationFrame(loop);
   }, [sparkColor, duration]);
 
   useEffect(() => {

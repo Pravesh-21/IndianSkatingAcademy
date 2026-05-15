@@ -13,7 +13,7 @@ export function useGSAPScroll() {
 
     gsap.registerPlugin(ScrollTrigger);
 
-    let ctx = gsap.context(() => {
+    const ctx = gsap.context(() => {
       const reveals = gsap.utils.toArray('.reveal');
       if (reveals.length) {
         gsap.fromTo(

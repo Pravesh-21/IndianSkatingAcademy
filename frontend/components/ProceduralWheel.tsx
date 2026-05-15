@@ -1,7 +1,7 @@
 'use client';
 
-import { useRef, useMemo, RefObject, useEffect } from 'react';
-import { useFrame, useThree } from '@react-three/fiber';
+import { useRef, RefObject } from 'react';
+import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
 /* ═══════════════════════════════════════════════

@@ -125,44 +125,46 @@ function BearingFlash({ scrollRef }: { scrollRef: RefObject<{ progress: number; 
   );
 }
 
+const STREAK_COUNT = 1000;
+const [STREAK_POSITIONS, STREAK_VELOCITIES] = (() => {
+  const p = new Float32Array(STREAK_COUNT * 2 * 3);
+  const v = new Float32Array(STREAK_COUNT);
+  for (let i = 0; i < STREAK_COUNT; i++) {
+    // Distribute streaks in a wide cylinder around the center so they don't block the wheel
+    const angle = Math.random() * Math.PI * 2;
+    const radius = Math.random() * 40 + 8; // Keep away from center
+    const x = Math.cos(angle) * radius;
+    const y = Math.sin(angle) * radius;
+    const z = (Math.random() - 0.5) * 200 - 50;
+    const length = Math.random() * 12 + 4; // Long streaks
+    
+    p[i * 6] = x;
+    p[i * 6 + 1] = y;
+    p[i * 6 + 2] = z;
+    
+    p[i * 6 + 3] = x;
+    p[i * 6 + 4] = y;
+    p[i * 6 + 5] = z - length;
+    
+    v[i] = Math.random() * 100 + 50; // Fast varying speeds
+  }
+  return [p, v];
+})();
+
 /* ─── Dynamic Speed Streaks ─── */
 function SpeedStreaks() {
   const ref = useRef<THREE.LineSegments>(null);
-  const count = 1000;
-  
-  const [positions, velocities] = useMemo(() => {
-    const p = new Float32Array(count * 2 * 3);
-    const v = new Float32Array(count);
-    for (let i = 0; i < count; i++) {
-      // Distribute streaks in a wide cylinder around the center so they don't block the wheel
-      const angle = Math.random() * Math.PI * 2;
-      const radius = Math.random() * 40 + 8; // Keep away from center
-      const x = Math.cos(angle) * radius;
-      const y = Math.sin(angle) * radius;
-      const z = (Math.random() - 0.5) * 200 - 50;
-      const length = Math.random() * 12 + 4; // Long streaks
-      
-      p[i * 6] = x;
-      p[i * 6 + 1] = y;
-      p[i * 6 + 2] = z;
-      
-      p[i * 6 + 3] = x;
-      p[i * 6 + 4] = y;
-      p[i * 6 + 5] = z - length;
-      
-      v[i] = Math.random() * 100 + 50; // Fast varying speeds
-    }
-    return [p, v];
-  }, []);
+
+
 
   useFrame((state, delta) => {
     if (!ref.current) return;
     const pos = ref.current.geometry.attributes.position;
-    for (let i = 0; i < count; i++) {
+    for (let i = 0; i < STREAK_COUNT; i++) {
       let z1 = pos.array[i * 6 + 2] as number;
       let z2 = pos.array[i * 6 + 5] as number;
       
-      const speed = velocities[i] * delta;
+      const speed = STREAK_VELOCITIES[i] * delta;
       z1 += speed;
       z2 += speed;
       
@@ -183,7 +185,7 @@ function SpeedStreaks() {
       <bufferGeometry>
         <bufferAttribute 
         attach="attributes-position" 
-        args={[positions, 3]} />
+        args={[STREAK_POSITIONS, 3]} />
       </bufferGeometry>
       <lineBasicMaterial color="#00ff88" transparent opacity={0.3} depthWrite={false} blending={THREE.AdditiveBlending} />
     </lineSegments>
