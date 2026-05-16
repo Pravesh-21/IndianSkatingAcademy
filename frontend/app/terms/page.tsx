@@ -1,14 +1,14 @@
 'use client';
 
-export default function TermsPage() {
+export default function Terms() {
   return (
     <main className="legal-page">
       <section className="legal-hero">
-        <h1 className="reveal">Terms & <span className="text-glow">Conditions</span></h1>
-        <p className="reveal">Last Updated: May 2026</p>
+        <h1>Terms & <span className="text-glow">Conditions</span></h1>
+        <p>Last Updated: May 2026</p>
       </section>
 
-      <section className="legal-content reveal">
+      <section className="legal-content">
         <div className="legal-card">
           <h2>1. Introduction</h2>
           <p>

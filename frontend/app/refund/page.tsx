@@ -1,14 +1,14 @@
 'use client';
 
-export default function RefundPage() {
+export default function Refund() {
   return (
     <main className="legal-page">
       <section className="legal-hero">
-        <h1 className="reveal">Refund <span className="text-glow">Policy</span></h1>
-        <p className="reveal">Last Updated: May 2026</p>
+        <h1>Refund <span className="text-glow">Policy</span></h1>
+        <p>Last Updated: May 2026</p>
       </section>
 
-      <section className="legal-content reveal">
+      <section className="legal-content">
         <div className="legal-card">
           <h2>1. Membership Fees</h2>
           <p>
@@ -16,14 +16,14 @@ export default function RefundPage() {
           </p>
 
           <h2>2. Eligibility for Refund</h2>
-          <p>
-            Refund requests may be considered under the following circumstances:
+          <div className="legal-section">
+            <p>Refund requests may be considered under the following circumstances:</p>
             <ul>
               <li>Medical reasons (with valid certification) preventing the athlete from skating for more than 30 days.</li>
               <li>Relocation to a city where ISA does not have a presence.</li>
               <li>Cancellation of a program or event by the academy.</li>
             </ul>
-          </p>
+          </div>
 
           <h2>3. Request Process</h2>
           <p>

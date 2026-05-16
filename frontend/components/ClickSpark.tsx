@@ -21,6 +21,18 @@ interface Particle {
   life: number;
 }
 
+function resolveSparkColor(color: string): string {
+  if (typeof window === 'undefined') return '#00C2FF';
+  if (color.startsWith('var(')) {
+    const name = color.slice(4, -1).trim();
+    const resolved = getComputedStyle(document.documentElement)
+      .getPropertyValue(name)
+      .trim();
+    return resolved || '#00C2FF';
+  }
+  return color;
+}
+
 const ClickSpark: React.FC<ClickSparkProps> = ({
   sparkColor = '#ffffff',
   sparkSize = 10,
@@ -73,7 +85,7 @@ const ClickSpark: React.FC<ClickSparkProps> = ({
 
       ctx.save();
       ctx.globalAlpha = p.alpha;
-      ctx.fillStyle = sparkColor;
+      ctx.fillStyle = resolveSparkColor(sparkColor);
       
       // Draw diamond-like spark
       ctx.beginPath();
@@ -86,7 +98,7 @@ const ClickSpark: React.FC<ClickSparkProps> = ({
       
       // Add a glow
       ctx.shadowBlur = 10;
-      ctx.shadowColor = sparkColor;
+      ctx.shadowColor = resolveSparkColor(sparkColor);
       ctx.restore();
     });
 

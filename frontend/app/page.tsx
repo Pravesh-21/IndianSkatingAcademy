@@ -7,12 +7,25 @@ import { useGSAPScroll } from '@/hooks/useGSAPScroll';
 import { programs, coaches } from '@/lib/data';
 import Link from 'next/link';
 import BorderGlow from '@/components/BorderGlow';
+import { AnimatePresence, motion } from 'framer-motion';
 
 export default function Home() {
   const [loaded, setLoaded] = useState(false);
+  const [selectedProgram, setSelectedProgram] = useState<any>(null);
   const containerRef = useGSAPScroll();
 
   useEffect(() => {
+    // Listen for hard refresh keyboard shortcuts to clear the seen flag
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'r') {
+        sessionStorage.removeItem('isa-preloader-seen');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
+    const hasSeenBefore = sessionStorage.getItem('isa-preloader-seen');
+    const showPreloader = !hasSeenBefore;
+    
     const animateTagline = () => {
       const taglineEl = document.querySelector('.hero-tagline');
       if (!taglineEl) return;
@@ -26,15 +39,27 @@ export default function Home() {
         opacity: 1,
         stagger: 0.15,
         duration: 0.6,
-        delay: 1.2,
+        delay: showPreloader ? 1.2 : 0.5,
         ease: 'power2.out'
       });
     };
 
-    animateTagline();
-    const timer = setTimeout(() => setLoaded(true), 3200);
+    if (!showPreloader) {
+      setLoaded(true);
+      animateTagline();
+    } else {
+      animateTagline();
+      const timer = setTimeout(() => {
+        setLoaded(true);
+        sessionStorage.setItem('isa-preloader-seen', 'true');
+      }, 3200);
+      return () => {
+        clearTimeout(timer);
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    }
 
-    return () => clearTimeout(timer);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   return (
@@ -59,6 +84,11 @@ export default function Home() {
             Speed is the language &middot; The rink is the page
           </p>
 
+          <div className="hero-cta reveal" style={{ opacity: 1, transition: 'none', display: 'flex', gap: '20px', marginTop: '48px' }}>
+            <Link href="/join" className="btn-pill" data-cursor-hover>Start Training</Link>
+            <a href="#featured-programs" className="btn-pill btn-pill--outline" data-cursor-hover>View Programs</a>
+          </div>
+
           <div className="hero-marquee" style={{ opacity: 1, transition: 'opacity 1.5s ease 2s' }}>
             <div className="marquee-track">
               {[1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4].map((num, idx) => (
@@ -68,17 +98,35 @@ export default function Home() {
               ))}
             </div>
           </div>
+
+          <div className="scroll-indicator">
+            <div className="scroll-mouse">
+              <div className="scroll-wheel" />
+            </div>
+            <span>Scroll to explore</span>
+          </div>
         </section>
 
         {/* INTRODUCTION */}
         <section className="rink-section section" id="intro" style={{ padding: '0' }}>
           <div className="rink-content full-width" style={{ padding: '120px 20px' }}>
             <p className="section-label reveal" style={{ marginBottom: '16px' }}>The Academy</p>
-            <h2 className="section-heading reveal" style={{ fontSize: 'clamp(40px, 5vw, 72px)', marginBottom: '32px' }}>
+            <h2 className="section-heading reveal" style={{ fontSize: 'clamp(40px, 5vw, 72px)', marginBottom: '16px' }}>
               Master the Art of <span className="accent">Velocity</span>
             </h2>
-            <p className="section-body reveal" style={{ fontSize: '18px', lineHeight: '1.8', color: 'var(--chrome)', marginBottom: '48px' }}>
-              We don&apos;t just teach skating; we engineer champions. Indian Skating Academy is the country&apos;s premier institution dedicated to the absolute mastery of inline sports. From the precise mechanics of speed skating to the flawless execution of artistic freestyle, we provide an elite training ecosystem designed to push you beyond your limits.
+            <p className="section-subheading reveal" style={{ 
+              fontFamily: 'var(--font-mono)', 
+              fontSize: '14px', 
+              color: 'var(--blue)', 
+              textTransform: 'uppercase', 
+              letterSpacing: '0.15em', 
+              marginBottom: '32px',
+              fontWeight: '600'
+            }}>
+              Redefining Excellence in Inline Sports
+            </p>
+            <p className="section-body reveal" style={{ fontSize: '18px', lineHeight: '1.8', color: 'var(--text-secondary)', marginBottom: '48px', maxWidth: '800px', marginLeft: 'auto', marginRight: 'auto' }}>
+              We don&apos;t just teach skating; we engineer champions. Indian Skating Academy is the country&apos;s premier institution dedicated to the absolute mastery of inline sports. From the precise mechanics of speed skating to the flawless execution of artistic freestyle, we provide an elite training ecosystem designed to push you beyond your limits. Whether you are stepping onto the rink for the first time or aiming for international podiums, our world-class coaching staff is committed to your journey of speed, agility, and grace.
             </p>
             <div className="hero-cta reveal" style={{ opacity: 1, transition: 'none', display: 'flex', justifyContent: 'center', gap: '24px', flexWrap: 'wrap' }}>
               <BorderGlow
@@ -135,7 +183,12 @@ export default function Home() {
             {programs.slice(0, 4).map((prog, i) => {
               const coach = coaches.find(c => c.name === prog.coach);
               return (
-                <div key={prog.name} className="program-card reveal">
+                <div 
+                  key={prog.name} 
+                  className="program-card reveal" 
+                  onClick={() => setSelectedProgram(prog)}
+                  style={{ cursor: 'pointer' }}
+                >
                   <div className="program-icon">{prog.icon}</div>
                   <h3 className="program-name">{prog.name}</h3>
                   <div className="program-meta">
@@ -175,6 +228,66 @@ export default function Home() {
           </div>
         </section>
       </div>
+
+      <AnimatePresence>
+        {selectedProgram && (
+          <motion.div 
+            className="program-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedProgram(null)}
+          >
+            <motion.div 
+              className="program-expanded-card"
+              initial={{ scale: 0.8, y: 20, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.8, y: 20, opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button className="card-close" onClick={() => setSelectedProgram(null)}>×</button>
+              
+              <div className="expanded-left">
+                <img 
+                  src={coaches.find(c => c.name === selectedProgram.coach)?.image} 
+                  alt={selectedProgram.coach} 
+                  className="expanded-coach-img"
+                />
+                <div className="coach-overlay-info">
+                  <h4>{selectedProgram.coach}</h4>
+                  <p>{coaches.find(c => c.name === selectedProgram.coach)?.role}</p>
+                </div>
+              </div>
+              
+              <div className="expanded-right">
+                <div className="expanded-badge">{selectedProgram.ages}</div>
+                <h2 className="expanded-title">{selectedProgram.name}</h2>
+                <div className="expanded-divider" />
+                
+                <p className="expanded-bio">
+                  {coaches.find(c => c.name === selectedProgram.coach)?.bio}
+                </p>
+                
+                <div className="expanded-meta-grid">
+                  <div className="meta-item">
+                    <span className="meta-label">Target Group</span>
+                    <span className="meta-value">{selectedProgram.ages}</span>
+                  </div>
+                  <div className="meta-item">
+                    <span className="meta-label">Certification</span>
+                    <span className="meta-value">ISA Gold Level</span>
+                  </div>
+                </div>
+                
+                <Link href="/join" className="btn-pill" style={{ marginTop: '32px', width: '100%', justifyContent: 'center' }}>
+                  Register for Batch
+                </Link>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </main>
   );
 }

@@ -3,13 +3,21 @@
 import Link from 'next/link';
 
 export default function Footer() {
+  const handleLinkClick = () => {
+    if ((window as any).lenis) {
+      (window as any).lenis.scrollTo(0, { immediate: false });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   return (
     <footer className="footer" id="footer">
       <div className="footer-container">
         {/* Footer Top: Brand and Newsletter */}
         <div className="footer-top">
           <div className="footer-brand">
-            <Link href="/" className="footer-logo">ISA</Link>
+            <Link href="/" className="footer-logo" onClick={handleLinkClick}>ISA</Link>
             <p className="footer-tagline">
               India's Premier Inline Skating Academy. <br />
               Speed is the language. The rink is the page.
@@ -30,23 +38,22 @@ export default function Footer() {
           <div className="footer-nav">
             <div className="footer-nav-col">
               <h4>Academy</h4>
-              <Link href="/about">About Us</Link>
-              <Link href="/programs">Programs</Link>
-              <Link href="/gallery">Gallery</Link>
-              <Link href="/locations">Locations</Link>
-            </div>
-            <div className="footer-nav-col">
-              <h4>Support</h4>
-              <Link href="/contact">Contact</Link>
-              <Link href="/join">Join Academy</Link>
-              <a href="mailto:info@skatingacademy.in">Email Us</a>
-              <a href="tel:+917447444707">+91 7447444707</a>
+              <Link href="/about" onClick={handleLinkClick}>About Us</Link>
+              <Link href="/programs" onClick={handleLinkClick}>Programs</Link>
+              <Link href="/gallery" onClick={handleLinkClick}>Gallery</Link>
+              <Link href="/locations" onClick={handleLinkClick}>Locations</Link>
             </div>
             <div className="footer-nav-col">
               <h4>Legal</h4>
-              <Link href="/terms">Terms & Conditions</Link>
-              <Link href="/privacy">Privacy Policy</Link>
-              <Link href="/refund">Refund Policy</Link>
+              <Link href="/terms" onClick={handleLinkClick}>Terms & Conditions</Link>
+              <Link href="/privacy" onClick={handleLinkClick}>Privacy Policy</Link>
+              <Link href="/refund" onClick={handleLinkClick}>Refund Policy</Link>
+            </div>
+            <div className="footer-nav-col">
+              <h4>Get in Touch</h4>
+              <Link href="/join" onClick={handleLinkClick}>Contact Us</Link>
+              <a href="mailto:info@skatingacademy.in">Email Us</a>
+              <a href="tel:+917447444707">+91 7447444707</a>
             </div>
           </div>
         </div>

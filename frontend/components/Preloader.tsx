@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 interface PreloaderProps {
   loaded: boolean;
@@ -13,9 +15,29 @@ export default function Preloader({ loaded }: PreloaderProps) {
   const barFillRef   = useRef<HTMLDivElement>(null);
   const hasAnimated  = useRef(false);
 
+  // Start true so we render instantly (no 0.2s flash of homepage)
+  // useLayoutEffect will instantly hide it before paint if already seen
+  const [shouldRender, setShouldRender] = useState(true);
+
+  useIsomorphicLayoutEffect(() => {
+    // Listen for hard refresh keyboard shortcuts to clear the seen flag
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'r') {
+        sessionStorage.removeItem('isa-preloader-seen');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
+    const hasSeenBefore = sessionStorage.getItem('isa-preloader-seen');
+    if (hasSeenBefore) {
+      setShouldRender(false);
+    }
+
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   useEffect(() => {
-    if (hasAnimated.current) return;
-    hasAnimated.current = true;
+    if (!shouldRender) return;
 
     const canvas = canvasRef.current!;
     const ctx    = canvas.getContext('2d')!;
@@ -368,7 +390,7 @@ export default function Preloader({ loaded }: PreloaderProps) {
     });
 
     return () => cancelAnimationFrame(animId);
-  }, []);
+  }, [shouldRender]);
 
   // ── Exit ──────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -387,12 +409,14 @@ export default function Preloader({ loaded }: PreloaderProps) {
 
   return (
     <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Share+Tech+Mono&display=swap');
-
+      <style jsx>{`
+        :global(html.skip-preloader) .pl {
+          display: none !important;
+        }
         .pl {
-          position: fixed; inset: 0; z-index: 9999;
-          background: #020810; overflow: hidden;
+          position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+          background: #020810; z-index: 9999;
+          overflow: hidden; cursor: wait;
         }
         .pl::before {
           content: ''; position: absolute; inset: 0;
@@ -467,27 +491,29 @@ export default function Preloader({ loaded }: PreloaderProps) {
         }
       `}</style>
 
-      <div className="pl" ref={containerRef}>
-        <canvas ref={canvasRef} />
+      {shouldRender && (
+        <div className="pl fixed inset-0 w-screen h-screen bg-[#020810] z-[9999] overflow-hidden cursor-wait" ref={containerRef}>
+          <canvas ref={canvasRef} />
 
-        <div className="plc plc-tl" />
-        <div className="plc plc-tr" />
-        <div className="plc plc-bl" />
-        <div className="plc plc-br" />
+            <div className="plc plc-tl" />
+            <div className="plc plc-tr" />
+            <div className="plc plc-bl" />
+            <div className="plc plc-br" />
 
-        <span className="pl-side pl-side-l">Rolling · Surface</span>
-        <span className="pl-side pl-side-r">Indian Skating Academy · Nagpur</span>
+            <span className="pl-side pl-side-l">Rolling · Surface</span>
+            <span className="pl-side pl-side-r">Indian Skating Academy · Nagpur</span>
 
-        <div className="pl-footer">
-          <div className="pl-meta">
-            <span className="pl-label">Initializing</span>
-            <span className="pl-counter" ref={counterRef}>000</span>
-          </div>
-          <div className="pl-track">
-            <div className="pl-fill" ref={barFillRef} />
-          </div>
+            <div className="pl-footer">
+              <div className="pl-meta">
+                <span className="pl-label">Initializing</span>
+                <span className="pl-counter" ref={counterRef}>000</span>
+              </div>
+              <div className="pl-track">
+                <div className="pl-fill" ref={barFillRef} />
+              </div>
+            </div>
         </div>
-      </div>
+      )}
     </>
   );
 }

@@ -1,0 +1,22 @@
+{
+  "name": "indian-skating-academy",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "install:frontend": "cd frontend && npm install",
+    "install:backend": "cd backend && npm install",
+    "postinstall": "npm run install:frontend && npm run install:backend",
+    "dev:frontend": "cd frontend && (if exist .next rd /s /q .next) && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "dev": "concurrently --names FE,BE --prefix-colors cyan,yellow \"npm run dev:frontend\" \"npm run dev:backend\""
+  },
+  "dependencies": {
+    "lucide-react": "^1.16.0",
+    "ogl": "^1.0.11"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
+
+

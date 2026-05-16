@@ -1,14 +1,14 @@
 'use client';
 
-export default function PrivacyPage() {
+export default function Privacy() {
   return (
     <main className="legal-page">
       <section className="legal-hero">
-        <h1 className="reveal">Privacy <span className="text-glow">Policy</span></h1>
-        <p className="reveal">Last Updated: May 2026</p>
+        <h1>Privacy <span className="text-glow">Policy</span></h1>
+        <p>Last Updated: May 2026</p>
       </section>
 
-      <section className="legal-content reveal">
+      <section className="legal-content">
         <div className="legal-card">
           <h2>1. Data Collection</h2>
           <p>

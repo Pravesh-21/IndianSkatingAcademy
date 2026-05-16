@@ -1,8 +1,14 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Syne, Inter, JetBrains_Mono } from "next/font/google";
-import "./globals.css";
-
-/* ── Premium Font Stack ── */
+import "../styles/globals.css";
+import Providers from "@/components/Providers";
+import ScrollToTop from "@/components/ScrollToTop";
+import Navigation from "@/components/Navigation";
+import Footer from "@/components/Footer";
+import SmoothScroll from "@/components/SmoothScroll";
+import CustomCursor from "@/components/CustomCursor";
+import ClickSpark from "@/components/ClickSpark";
+import Particles from "@/components/Particles";
 
 // Display / headings — bold, editorial, high-impact
 const syne = Syne({
@@ -55,12 +61,25 @@ export const metadata: Metadata = {
   },
 };
 
-import Navigation from "@/components/Navigation";
-import Footer from "@/components/Footer";
-import SmoothScroll from "@/components/SmoothScroll";
-import CustomCursor from "@/components/CustomCursor";
-import ClickSpark from "@/components/ClickSpark";
-import Particles from "@/components/Particles";
+const themeScript = `
+(function() {
+  try {
+    var t = localStorage.getItem('isa-theme');
+    if (t !== 'light' && t !== 'dark') {
+      t = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    }
+    document.documentElement.setAttribute('data-theme', t);
+  } catch (e) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+  try {
+    if (sessionStorage.getItem('isa-preloader-seen')) {
+      document.documentElement.classList.add('skip-preloader');
+    }
+  } catch (e) {}
+})();
+`;
 
 export default function RootLayout({
   children,
@@ -68,27 +87,37 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${syne.variable} ${spaceGrotesk.variable} ${inter.variable} ${jetbrainsMono.variable}`}>
+    <html
+      lang="en"
+      className={`${syne.variable} ${spaceGrotesk.variable} ${inter.variable} ${jetbrainsMono.variable}`}
+      suppressHydrationWarning
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body>
-        <ClickSpark
-          sparkColor="#00C2FF"
-          sparkSize={10}
-          sparkRadius={15}
-          sparkCount={8}
-          duration={400}
-        >
-          <SmoothScroll>
-            <div className="static-background">
-              <div className="gradient-glow" />
-            </div>
-            <div className="noise-overlay" />
-            <Particles particleCount={50} particleColor="#00C2FF" speed={0.3} />
-            <CustomCursor />
-            <Navigation />
-            {children}
-            <Footer />
-          </SmoothScroll>
-        </ClickSpark>
+        <ScrollToTop />
+        <Providers>
+          <ClickSpark
+            sparkColor="#00C2FF"
+            sparkSize={10}
+            sparkRadius={15}
+            sparkCount={8}
+            duration={400}
+          >
+            <SmoothScroll>
+              <div className="static-background">
+                <div className="gradient-glow" />
+              </div>
+              <div className="noise-overlay" />
+              <Particles particleCount={50} particleColor="#00C2FF" speed={0.3} />
+              <CustomCursor />
+              <Navigation />
+              {children}
+              <Footer />
+            </SmoothScroll>
+          </ClickSpark>
+        </Providers>
       </body>
     </html>
   );

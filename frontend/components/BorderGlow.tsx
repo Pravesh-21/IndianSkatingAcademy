@@ -1,7 +1,6 @@
 'use client';
 
 import { useRef, useCallback, useEffect, type ReactNode } from 'react';
-import './BorderGlow.css';
 
 interface BorderGlowProps {
   children?: ReactNode;
@@ -155,10 +154,14 @@ const BorderGlow: React.FC<BorderGlowProps> = ({
     <div
       ref={cardRef}
       onPointerMove={handlePointerMove}
-      className={`border-glow-card ${className}`}
+      className={`relative isolate grid overflow-visible rounded-3xl border border-white/15 shadow-2xl group transition-all ${className}`}
       style={{
-        '--card-bg': backgroundColor,
+        borderRadius: `${borderRadius}px`,
+        backgroundColor: backgroundColor || '#120F17',
+        transform: 'translate3d(0, 0, 0.01px)',
+        '--card-bg': backgroundColor || '#120F17',
         '--edge-sensitivity': edgeSensitivity,
+        '--color-sensitivity': `${(edgeSensitivity || 30) + 20}`,
         '--border-radius': `${borderRadius}px`,
         '--glow-padding': `${glowRadius}px`,
         '--cone-spread': coneSpread,
@@ -167,8 +170,52 @@ const BorderGlow: React.FC<BorderGlowProps> = ({
         ...buildGradientVars(colors),
       } as React.CSSProperties}
     >
-      <span className="edge-light" />
-      <div className="border-glow-inner">
+      {/* Wrapper for hover opacity transition */}
+      <div className="absolute inset-0 pointer-events-none rounded-[inherit] -z-10 transition-opacity duration-700 ease-in-out group-hover:duration-300 group-hover:ease-out group-[.sweep-active]:duration-300 group-[.sweep-active]:ease-out opacity-0 group-hover:opacity-100 group-[.sweep-active]:opacity-100">
+        
+        {/* Colored mesh-gradient border layer */}
+        <div 
+          className="absolute inset-0 rounded-[inherit] border border-transparent"
+          style={{
+            background: `linear-gradient(var(--card-bg) 0 100%) padding-box, linear-gradient(rgb(255 255 255 / 0%) 0% 100%) border-box, var(--gradient-one) border-box, var(--gradient-two) border-box, var(--gradient-three) border-box, var(--gradient-four) border-box, var(--gradient-five) border-box, var(--gradient-six) border-box, var(--gradient-seven) border-box, var(--gradient-base) border-box`,
+            opacity: `calc((var(--edge-proximity) - var(--color-sensitivity)) / (100 - var(--color-sensitivity)))`,
+            maskImage: `conic-gradient(from var(--cursor-angle) at center, black calc(var(--cone-spread) * 1%), transparent calc((var(--cone-spread) + 15) * 1%), transparent calc((100 - var(--cone-spread) - 15) * 1%), black calc((100 - var(--cone-spread)) * 1%))`
+          }}
+        />
+        
+        {/* Colored mesh-gradient background fill layer */}
+        <div 
+          className="absolute inset-0 rounded-[inherit] border border-transparent mix-blend-soft-light"
+          style={{
+            background: `var(--gradient-one) padding-box, var(--gradient-two) padding-box, var(--gradient-three) padding-box, var(--gradient-four) padding-box, var(--gradient-five) padding-box, var(--gradient-six) padding-box, var(--gradient-seven) padding-box, var(--gradient-base) padding-box`,
+            maskImage: `linear-gradient(to bottom, black, black), radial-gradient(ellipse at 50% 50%, black 40%, transparent 65%), radial-gradient(ellipse at 66% 66%, black 5%, transparent 40%), radial-gradient(ellipse at 33% 33%, black 5%, transparent 40%), radial-gradient(ellipse at 66% 33%, black 5%, transparent 40%), radial-gradient(ellipse at 33% 66%, black 5%, transparent 40%), conic-gradient(from var(--cursor-angle) at center, transparent 5%, black 15%, black 85%, transparent 95%)`,
+            maskComposite: `subtract, add, add, add, add, add`,
+            WebkitMaskComposite: `source-out, source-over, source-over, source-over, source-over, source-over`,
+            opacity: `calc(var(--fill-opacity, 0.5) * (var(--edge-proximity) - var(--color-sensitivity)) / (100 - var(--color-sensitivity)))`
+          }}
+        />
+      </div>
+
+      {/* Outer glow wrapper (needs positive z-index and different inset) */}
+      <div 
+        className="absolute pointer-events-none z-10 transition-opacity duration-700 ease-in-out group-hover:duration-300 group-hover:ease-out group-[.sweep-active]:duration-300 group-[.sweep-active]:ease-out opacity-0 group-hover:opacity-100 group-[.sweep-active]:opacity-100 mix-blend-plus-lighter"
+        style={{
+          inset: `calc(${glowRadius}px * -1)`,
+          maskImage: `conic-gradient(from var(--cursor-angle) at center, black 2.5%, transparent 10%, transparent 90%, black 97.5%)`,
+          opacity: `calc((var(--edge-proximity) - var(--edge-sensitivity)) / (100 - var(--edge-sensitivity)))`
+        }}
+      >
+        <div 
+          className="absolute rounded-[inherit]"
+          style={{
+            inset: `${glowRadius}px`,
+            boxShadow: `inset 0 0 0 1px var(--glow-color), inset 0 0 1px 0 var(--glow-color-60), inset 0 0 3px 0 var(--glow-color-50), inset 0 0 6px 0 var(--glow-color-40), inset 0 0 15px 0 var(--glow-color-30), inset 0 0 25px 2px var(--glow-color-20), inset 0 0 50px 2px var(--glow-color-10), 0 0 1px 0 var(--glow-color-60), 0 0 3px 0 var(--glow-color-50), 0 0 6px 0 var(--glow-color-40), 0 0 15px 0 var(--glow-color-30), 0 0 25px 2px var(--glow-color-20), 0 0 50px 2px var(--glow-color-10)`
+          }}
+        />
+      </div>
+
+      {/* Inner Content */}
+      <div className="flex flex-col relative overflow-auto z-10 h-full w-full">
         {children}
       </div>
     </div>
