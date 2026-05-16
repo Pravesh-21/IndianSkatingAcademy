@@ -2362,20 +2362,19 @@ html[data-theme="light"] .marquee-item:hover img {
 
 .legal-hero h1 {
   font-family: var(--font-display);
-  font-size: clamp(40px, 6vw, 80px);
-  font-weight: 900;
+  font-size: clamp(40px, 6vw, 64px);
+  font-weight: 800;
   margin-bottom: 16px;
-  text-transform: uppercase;
   letter-spacing: -0.02em;
   color: var(--text-primary);
 }
 
 .legal-hero p {
-  color: var(--blue);
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
 }
 
 .legal-content {

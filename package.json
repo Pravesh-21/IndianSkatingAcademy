@@ -6,7 +6,7 @@
     "install:frontend": "cd frontend && npm install",
     "install:backend": "cd backend && npm install",
     "postinstall": "npm run install:frontend && npm run install:backend",
-    "dev:frontend": "cd frontend && npm run dev",
+    "dev:frontend": "cd frontend && (if exist .next rd /s /q .next) && npm run dev",
     "dev:backend": "cd backend && npm run dev",
     "dev": "concurrently --names FE,BE --prefix-colors cyan,yellow \"npm run dev:frontend\" \"npm run dev:backend\""
   },
