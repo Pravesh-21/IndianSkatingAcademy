@@ -23,8 +23,7 @@ export default function Home() {
     };
     window.addEventListener('keydown', handleKeyDown);
 
-    const hasSeenBefore = sessionStorage.getItem('isa-preloader-seen');
-    const showPreloader = !hasSeenBefore;
+    const showPreloader = true;
     
     const animateTagline = () => {
       const taglineEl = document.querySelector('.hero-tagline');

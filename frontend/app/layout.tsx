@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, Syne, Inter, JetBrains_Mono } from "next/font/google";
+import { Space_Grotesk, Syncopate, Barlow, JetBrains_Mono } from "next/font/google";
 import "../styles/globals.css";
 import Providers from "@/components/Providers";
 import ScrollToTop from "@/components/ScrollToTop";
@@ -11,10 +11,10 @@ import ClickSpark from "@/components/ClickSpark";
 import Particles from "@/components/Particles";
 
 // Display / headings — bold, editorial, high-impact
-const syne = Syne({
+const syncopate = Syncopate({
   subsets: ["latin"],
   variable: "--font-display",
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["400", "700"],
   display: "swap",
 });
 
@@ -27,7 +27,7 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 // Body text — clean, highly legible
-const inter = Inter({
+const barlow = Barlow({
   subsets: ["latin"],
   variable: "--font-body",
   weight: ["300", "400", "500", "600", "700"],
@@ -72,12 +72,6 @@ const themeScript = `
   } catch (e) {
     document.documentElement.setAttribute('data-theme', 'dark');
   }
-
-  try {
-    if (sessionStorage.getItem('isa-preloader-seen')) {
-      document.documentElement.classList.add('skip-preloader');
-    }
-  } catch (e) {}
 })();
 `;
 
@@ -89,7 +83,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${syne.variable} ${spaceGrotesk.variable} ${inter.variable} ${jetbrainsMono.variable}`}
+      className={`${syncopate.variable} ${spaceGrotesk.variable} ${barlow.variable} ${jetbrainsMono.variable}`}
       suppressHydrationWarning
     >
       <head>

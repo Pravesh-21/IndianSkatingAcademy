@@ -28,11 +28,6 @@ export default function Preloader({ loaded }: PreloaderProps) {
     };
     window.addEventListener('keydown', handleKeyDown);
 
-    const hasSeenBefore = sessionStorage.getItem('isa-preloader-seen');
-    if (hasSeenBefore) {
-      setShouldRender(false);
-    }
-
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
@@ -59,7 +54,7 @@ export default function Preloader({ loaded }: PreloaderProps) {
     const WHEEL_CY  = GROUND_Y;
 
     // ISA rendered big on an offscreen canvas; wheel reveals it by rolling over
-    const FONT_SIZE = Math.min(H * 0.20, W * 0.20, 180);
+    const FONT_SIZE = WHEEL_R * 2;
 
     // ── Offscreen: stamp canvas (the "ink" that gets revealed) ───────────────
     // We pre-render "ISA" onto a dedicated canvas, then use it as a texture

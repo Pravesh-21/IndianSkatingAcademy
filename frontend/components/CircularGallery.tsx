@@ -3,6 +3,8 @@
 import { Camera, Mesh, Plane, Program, Renderer, Texture, Transform } from 'ogl';
 import { useEffect, useRef } from 'react';
 
+import './CircularGallery.css';
+
 type GL = Renderer['gl'];
 
 function debounce<T extends (...args: any[]) => void>(func: T, wait: number) {
@@ -47,8 +49,8 @@ function createTextTexture(
   const fontSize = getFontSize(font);
   const textHeight = Math.ceil(fontSize * 1.2);
 
-  canvas.width = textWidth + 40;
-  canvas.height = textHeight + 40;
+  canvas.width = textWidth + 20;
+  canvas.height = textHeight + 20;
 
   context.font = font;
   context.fillStyle = color;
@@ -364,10 +366,10 @@ class Media {
       }
     }
     this.scale = this.screen.height / 1500;
-    this.plane.scale.y = (this.viewport.height * (1100 * this.scale)) / this.screen.height;
-    this.plane.scale.x = (this.viewport.width * (850 * this.scale)) / this.screen.width;
+    this.plane.scale.y = (this.viewport.height * (900 * this.scale)) / this.screen.height;
+    this.plane.scale.x = (this.viewport.width * (700 * this.scale)) / this.screen.width;
     this.plane.program.uniforms.uPlaneSizes.value = [this.plane.scale.x, this.plane.scale.y];
-    this.padding = 3;
+    this.padding = 2;
     this.width = this.plane.scale.x + this.padding;
     this.widthTotal = this.width * this.length;
     this.x = this.width * this.index;
@@ -680,5 +682,5 @@ export default function CircularGallery({
       app.destroy();
     };
   }, [items, bend, textColor, borderRadius, font, scrollSpeed, scrollEase]);
-  return <div className="w-full h-full overflow-hidden cursor-grab active:cursor-grabbing" ref={containerRef} />;
+  return <div className="circular-gallery" ref={containerRef} />;
 }
