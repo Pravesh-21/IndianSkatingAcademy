@@ -2185,8 +2185,24 @@ html[data-theme="light"] .marquee-item:hover img {
 
 .footer-nav {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 40px;
+}
+
+@media (max-width: 900px) {
+  .footer-nav {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-nav {
+    grid-template-columns: 1fr;
+  }
+  .footer-top {
+    grid-template-columns: 1fr;
+    gap: 60px;
+  }
 }
 
 .footer-nav-col {

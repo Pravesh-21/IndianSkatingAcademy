@@ -44,6 +44,12 @@ export default function Footer() {
               <Link href="/locations" onClick={handleLinkClick}>Locations</Link>
             </div>
             <div className="footer-nav-col">
+              <h4>Legal</h4>
+              <Link href="/terms" onClick={handleLinkClick}>Terms & Conditions</Link>
+              <Link href="/privacy" onClick={handleLinkClick}>Privacy Policy</Link>
+              <Link href="/refund" onClick={handleLinkClick}>Refund Policy</Link>
+            </div>
+            <div className="footer-nav-col">
               <h4>Get in Touch</h4>
               <Link href="/join" onClick={handleLinkClick}>Contact Us</Link>
               <a href="mailto:info@skatingacademy.in">Email Us</a>
