@@ -1,8 +1,10 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import { connectDB } from './services/mongo.js';
+import { initializeDatabase } from './services/db.js';
 import joinRouter from './routes/join.js';
+import adminRouter from './routes/admin.js';
+import inquiryRouter from './routes/inquiry.js';
 
 const app = express();
 const PORT = process.env.PORT ?? 4000;
@@ -10,8 +12,8 @@ const FRONTEND_URL = process.env.FRONTEND_URL ?? 'http://localhost:3000';
 
 // Middleware
 app.use(cors({
-  origin: [FRONTEND_URL, 'http://localhost:3000'],
-  methods: ['POST', 'GET', 'OPTIONS'],
+  origin: '*', // Allow all origins for development (including static files)
+  methods: ['POST', 'GET', 'OPTIONS', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type'],
 }));
 app.use(express.json());
@@ -23,6 +25,8 @@ app.get('/health', (_req, res) => {
 
 // Routes
 app.use('/api/join', joinRouter);
+app.use('/api/admin', adminRouter);
+app.use('/api/inquiry', inquiryRouter);
 
 // 404 handler
 app.use((_req, res) => {
@@ -32,7 +36,7 @@ app.use((_req, res) => {
 // Start
 async function start() {
   try {
-    await connectDB();
+    await initializeDatabase();
     app.listen(PORT, () => {
       console.log(`[Server] Running on http://localhost:${PORT}`);
       console.log(`[Server] Health: http://localhost:${PORT}/health`);

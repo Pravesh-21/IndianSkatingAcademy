@@ -1,8 +1,12 @@
 interface EnquiryDetails {
   name: string;
   age: number;
+  dob: string;
   phone: string;
+  email: string;
   discipline: string;
+  source: string;
+  method: string;
 }
 
 const DISCIPLINE_LABELS: Record<string, string> = {
@@ -47,6 +51,22 @@ export async function sendEnquiryEmail(details: EnquiryDetails): Promise<void> {
           <tr>
             <td style="padding: 10px 0; color: #6b7280; font-size: 14px; border-bottom: 1px solid #f1f5f9;">Discipline</td>
             <td style="padding: 10px 0; font-weight: 600; font-size: 14px; border-bottom: 1px solid #f1f5f9;">${disciplineLabel}</td>
+          </tr>
+          <tr>
+            <td style="padding: 10px 0; color: #6b7280; font-size: 14px; border-bottom: 1px solid #f1f5f9;">DOB</td>
+            <td style="padding: 10px 0; font-weight: 600; font-size: 14px; border-bottom: 1px solid #f1f5f9;">${details.dob}</td>
+          </tr>
+          <tr>
+            <td style="padding: 10px 0; color: #6b7280; font-size: 14px; border-bottom: 1px solid #f1f5f9;">Email</td>
+            <td style="padding: 10px 0; font-weight: 600; font-size: 14px; border-bottom: 1px solid #f1f5f9;">${details.email}</td>
+          </tr>
+          <tr>
+            <td style="padding: 10px 0; color: #6b7280; font-size: 14px; border-bottom: 1px solid #f1f5f9;">Source</td>
+            <td style="padding: 10px 0; font-weight: 600; font-size: 14px; border-bottom: 1px solid #f1f5f9;">${details.source}</td>
+          </tr>
+          <tr>
+            <td style="padding: 10px 0; color: #6b7280; font-size: 14px; border-bottom: 1px solid #f1f5f9;">Method</td>
+            <td style="padding: 10px 0; font-weight: 600; font-size: 14px; border-bottom: 1px solid #f1f5f9;">${details.method}</td>
           </tr>
           <tr>
             <td style="padding: 10px 0; color: #6b7280; font-size: 14px;">Submitted</td>

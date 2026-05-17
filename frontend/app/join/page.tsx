@@ -16,14 +16,24 @@ const DISCIPLINE_LABELS: Record<Discipline, string> = {
 const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '91XXXXXXXXXX';
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 
-function buildWhatsAppUrl(name: string, age: string, phone: string, discipline: Discipline): string {
+function buildWhatsAppUrl(name: string, age: string, dob: string, phone: string, email: string, discipline: Discipline, source: string): string {
   const disciplineLabel = DISCIPLINE_LABELS[discipline];
   const message = [
-    `Hi ISA! I'd like to join.`,
-    `Name: ${name}`,
-    `Age: ${age}`,
-    `Phone: ${phone}`,
-    `Discipline: ${disciplineLabel}`,
+    `Hello Indian Skating Academy Team,`,
+    ``,
+    `I’m interested in joining ISA and would like to know more about the training programs.`,
+    ``,
+    `Here are my details:`,
+    ``,
+    `• Name: ${name}`,
+    `• Age: ${age}`,
+    `• DOB: ${dob}`,
+    `• Phone: ${phone}`,
+    `• Email: ${email}`,
+    `• Discipline: ${disciplineLabel}`,
+    `• Source: ${source}`,
+    ``,
+    `Looking forward to your response. Thank you!`,
   ].join('\n');
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
 }
@@ -33,8 +43,11 @@ export default function JoinPage() {
 
   const [name, setName]             = useState('');
   const [age, setAge]               = useState('');
+  const [dob, setDob]               = useState('');
   const [phone, setPhone]           = useState('');
+  const [email, setEmail]           = useState('');
   const [discipline, setDiscipline] = useState<Discipline | ''>('');
+  const [source, setSource]         = useState('');
 
   const [showActions, setShowActions] = useState(false);
   const [status, setStatus]           = useState<Status>('idle');
@@ -43,7 +56,7 @@ export default function JoinPage() {
   // Validate fields and show action buttons
   function handleLaceUp(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim() || !age || !phone || !discipline) return;
+    if (!name.trim() || !age || !dob || !phone || !email || !discipline || !source) return;
     setShowActions(true);
     setStatus('idle');
     setErrorMsg('');
@@ -52,14 +65,14 @@ export default function JoinPage() {
   // Open WhatsApp in new tab and log to backend
   async function handleWhatsApp() {
     if (!discipline) return;
-    window.open(buildWhatsAppUrl(name, age, phone, discipline as Discipline), '_blank');
+    window.open(buildWhatsAppUrl(name, age, dob, phone, email, discipline as Discipline, source), '_blank');
 
-    // Also save to MongoDB silently (no email sent)
+    // Also save to DB silently
     try {
       await fetch(`${API_URL}/api/join`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, age: parseInt(age), phone, discipline, method: 'whatsapp' }),
+        body: JSON.stringify({ name, age: parseInt(age), dob, phone, email, discipline, source, method: 'whatsapp' }),
       });
     } catch {
       // Silently ignore — WhatsApp already opened
@@ -73,7 +86,7 @@ export default function JoinPage() {
       const res = await fetch(`${API_URL}/api/join`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, age: parseInt(age), phone, discipline, method: 'email' }),
+        body: JSON.stringify({ name, age: parseInt(age), dob, phone, email, discipline, source, method: 'email' }),
       });
       const data = await res.json();
 
@@ -130,6 +143,15 @@ export default function JoinPage() {
               />
               <input
                 className="form-input full-width"
+                type="date"
+                placeholder="Date of Birth"
+                id="form-dob"
+                required
+                value={dob}
+                onChange={e => { setDob(e.target.value); setShowActions(false); }}
+              />
+              <input
+                className="form-input full-width"
                 type="tel"
                 placeholder="Phone Number (10 digits)"
                 id="form-phone"
@@ -137,6 +159,15 @@ export default function JoinPage() {
                 pattern="[6-9][0-9]{9}"
                 value={phone}
                 onChange={e => { setPhone(e.target.value); setShowActions(false); }}
+              />
+              <input
+                className="form-input full-width"
+                type="email"
+                placeholder="Email Address"
+                id="form-email"
+                required
+                value={email}
+                onChange={e => { setEmail(e.target.value); setShowActions(false); }}
               />
               <select
                 className="form-select full-width"
@@ -151,6 +182,15 @@ export default function JoinPage() {
                 <option value="slalom">Slalom</option>
                 <option value="aggressive">Aggressive / Stunt</option>
               </select>
+              <input
+                className="form-input full-width"
+                type="text"
+                placeholder="How did you know about us?"
+                id="form-source"
+                required
+                value={source}
+                onChange={e => { setSource(e.target.value); setShowActions(false); }}
+              />
               <button type="submit" className="btn-submit" id="submit-form">
                 → Lace Up
               </button>

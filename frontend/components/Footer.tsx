@@ -51,7 +51,7 @@ export default function Footer() {
             </div>
             <div className="footer-nav-col">
               <h4>Get in Touch</h4>
-              <Link href="/join" onClick={handleLinkClick}>Contact Us</Link>
+              <Link href="/contact" onClick={handleLinkClick}>Contact Us</Link>
               <a href="mailto:info@skatingacademy.in">Email Us</a>
               <a href="tel:+917447444707">+91 7447444707</a>
             </div>
