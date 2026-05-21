@@ -2,12 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import ThemeToggle from './ThemeToggle';
 
 export default function Navigation() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -16,24 +17,92 @@ export default function Navigation() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  // Close menu on route change
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
+
+  // Lock body scroll when menu is open
+  useEffect(() => {
+    if (menuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [menuOpen]);
+
+  const toggleMenu = useCallback(() => {
+    setMenuOpen((prev) => !prev);
+  }, []);
+
   const linkClass = (href: string) =>
     pathname === href ? 'active' : '';
 
+  const navLinks = [
+    { href: '/', label: 'Home' },
+    { href: '/about', label: 'About' },
+    { href: '/events', label: 'Events' },
+    { href: '/gallery', label: 'Gallery' },
+    { href: '/programs', label: 'Programs' },
+    { href: '/locations', label: 'Locations' },
+    { href: '/join', label: 'Join' },
+  ];
+
   return (
-    <nav className={`nav${scrolled ? ' nav--scrolled' : ''}`}>
-      <Link href="/" className="nav-logo" data-cursor-hover>
-        ISA
-      </Link>
-      <div className="nav-links">
-        <Link href="/" className={linkClass('/')} data-cursor-hover>Home</Link>
-        <Link href="/about" className={linkClass('/about')} data-cursor-hover>About</Link>
-        <Link href="/events" className={linkClass('/events')} data-cursor-hover>Events</Link>
-        <Link href="/gallery" className={linkClass('/gallery')} data-cursor-hover>Gallery</Link>
-        <Link href="/programs" className={linkClass('/programs')} data-cursor-hover>Programs</Link>
-        <Link href="/locations" className={linkClass('/locations')} data-cursor-hover>Locations</Link>
-        <Link href="/join" className={linkClass('/join')} data-cursor-hover>Join</Link>
-        <ThemeToggle />
+    <>
+      <nav className={`nav${scrolled ? ' nav--scrolled' : ''}${menuOpen ? ' nav--menu-open' : ''}`}>
+        <Link href="/" className="nav-logo" data-cursor-hover>
+          ISA
+        </Link>
+
+        {/* Desktop links */}
+        <div className="nav-links">
+          {navLinks.map((link) => (
+            <Link key={link.href} href={link.href} className={linkClass(link.href)} data-cursor-hover>
+              {link.label}
+            </Link>
+          ))}
+          <ThemeToggle />
+        </div>
+
+        {/* Mobile hamburger button */}
+        <button
+          className={`nav-hamburger${menuOpen ? ' nav-hamburger--active' : ''}`}
+          onClick={toggleMenu}
+          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={menuOpen}
+          data-cursor-hover
+        >
+          <span className="nav-hamburger-line" />
+          <span className="nav-hamburger-line" />
+          <span className="nav-hamburger-line" />
+        </button>
+      </nav>
+
+      {/* Mobile menu overlay */}
+      <div className={`nav-mobile-overlay${menuOpen ? ' nav-mobile-overlay--open' : ''}`}>
+        <div className="nav-mobile-menu">
+          {navLinks.map((link, i) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`nav-mobile-link${pathname === link.href ? ' active' : ''}`}
+              onClick={() => setMenuOpen(false)}
+              style={{ animationDelay: menuOpen ? `${0.05 + i * 0.05}s` : '0s' }}
+              data-cursor-hover
+            >
+              <span className="nav-mobile-link-label">{link.label}</span>
+              <span className="nav-mobile-link-arrow">→</span>
+            </Link>
+          ))}
+          <div className="nav-mobile-footer">
+            <ThemeToggle />
+          </div>
+        </div>
       </div>
-    </nav>
+    </>
   );
 }

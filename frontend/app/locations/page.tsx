@@ -8,16 +8,21 @@ export default function LocationsPage() {
 
   return (
     <main className="page-wrapper" ref={containerRef as any}>
-      {/* LOCATIONS */}
-      <section className="locations-section section" id="locations">
-        <div className="locations-header">
-          <p className="section-label reveal">Where We Skate</p>
-          <h2 className="section-heading reveal">
-            World-Class <span className="accent">Facilities</span>
-          </h2>
-        </div>
+      {/* Page Hero */}
+      <section className="page-hero">
+        <p className="section-label reveal">Where We Skate</p>
+        <h2 className="section-heading reveal">
+          World-Class <span className="accent">Facilities</span>
+        </h2>
+        <p className="page-hero-subtitle reveal">
+          Train at premium venues designed for every skill level and discipline.
+        </p>
+      </section>
+
+      {/* Locations Grid */}
+      <section className="section" id="locations" style={{ paddingTop: 0 }}>
         <div className="locations-grid">
-          {locations.map((loc, i) => (
+          {locations.map((loc) => (
             <div key={loc.name} className="location-card reveal">
               <span className="location-type">{loc.type}</span>
               <h3 className="location-name">{loc.name}</h3>

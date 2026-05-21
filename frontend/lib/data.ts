@@ -37,3 +37,48 @@ export const locations = [
   { name: 'Eastern Express Track', desc: '200m banked track designed for high-speed professional training and time trials.', type: 'Outdoor Track' },
   { name: 'Ajmera Treon Hub', desc: 'Beginner-friendly community center focused on foundational skills and weekend batches.', type: 'Community' },
 ];
+
+export const events = [
+  {
+    title: 'Summer Speed Camp 2026',
+    date: 'June 15 – June 28, 2026',
+    desc: 'Intensive 2-week speed skating bootcamp for intermediate and advanced skaters. Focus on lap technique, drafting, and race strategy.',
+    location: 'Eastern Express Track',
+    status: 'upcoming' as const,
+  },
+  {
+    title: 'ISA Inter-Academy Championship',
+    date: 'July 20, 2026',
+    desc: 'Annual competitive event featuring speed, slalom, and freestyle categories. Open to all ISA-registered athletes.',
+    location: 'Korum Mall Arena',
+    status: 'upcoming' as const,
+  },
+  {
+    title: 'Freestyle Masterclass with Coach Laxmikant',
+    date: 'August 5, 2026',
+    desc: 'One-day intensive workshop covering advanced artistic freestyle techniques, choreography, and performance scoring.',
+    location: 'Korum Mall Arena',
+    status: 'upcoming' as const,
+  },
+  {
+    title: 'National Inline Skating Qualifier',
+    date: 'March 12, 2026',
+    desc: 'State-level qualifying rounds for the National Inline Skating Championship. 60+ athletes participated across 4 disciplines.',
+    location: 'Eastern Express Track',
+    status: 'past' as const,
+  },
+  {
+    title: 'ISA Foundation Day Celebration',
+    date: 'January 26, 2026',
+    desc: 'Annual celebration marking ISA\'s founding with exhibition matches, alumni meetups, and a showcase of upcoming talent.',
+    location: 'Ajmera Treon Hub',
+    status: 'past' as const,
+  },
+  {
+    title: 'Winter Slalom Workshop',
+    date: 'December 8, 2025',
+    desc: 'Hands-on slalom training workshop led by Coach Neer Murarkar. Covered cone techniques, footwork drills, and competition prep.',
+    location: 'Korum Mall Arena',
+    status: 'past' as const,
+  },
+];
