@@ -9,22 +9,24 @@ import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
 
 export default function Home() {
-  const [loaded, setLoaded] = useState(true);
+  const [loaded, setLoaded] = useState(() => {
+    if (typeof window !== 'undefined' && (window as any).__isaPreloaderSeen) {
+      return true;
+    }
+    return false;
+  });
   const [selectedProgram, setSelectedProgram] = useState<any>(null);
   const containerRef = useGSAPScroll();
 
   useEffect(() => {
-    const hasSeen = sessionStorage.getItem('isa-preloader-seen');
-    const showPreloader = !hasSeen;
-
-    if (showPreloader) {
-      setLoaded(false);
-    }
+    const showPreloader = !loaded;
 
     // Listen for hard refresh keyboard shortcuts to clear the seen flag
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'r') {
-        sessionStorage.removeItem('isa-preloader-seen');
+        if (typeof window !== 'undefined') {
+          delete (window as any).__isaPreloaderSeen;
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -53,7 +55,9 @@ export default function Home() {
       animateTagline();
       const timer = setTimeout(() => {
         setLoaded(true);
-        sessionStorage.setItem('isa-preloader-seen', 'true');
+        if (typeof window !== 'undefined') {
+          (window as any).__isaPreloaderSeen = true;
+        }
       }, 3200);
       return () => {
         clearTimeout(timer);
@@ -74,10 +78,7 @@ export default function Home() {
 
       <div className="scroll-content">
         <section className="hero" id="hero">
-          <div className="hero-badge" style={{ opacity: 1, transition: 'opacity 0.8s ease 0.6s' }}>
-            <span className="hero-badge-dot" />
-            India&apos;s #1 Inline Skating Academy
-          </div>
+          
 
           <h1 className="hero-title">Indian Skating Academy</h1>
           <div className="hero-divider" />
@@ -88,7 +89,6 @@ export default function Home() {
 
           <div className="hero-cta reveal" style={{ opacity: 1, transition: 'none', display: 'flex', gap: '20px', marginTop: '48px' }}>
             <Link href="/join" className="btn-pill" data-cursor-hover>Start Training</Link>
-            <a href="#featured-programs" className="btn-pill btn-pill--outline" data-cursor-hover>View Programs</a>
           </div>
 
           <div className="hero-marquee" style={{ opacity: 1, transition: 'opacity 1.5s ease 2s' }}>

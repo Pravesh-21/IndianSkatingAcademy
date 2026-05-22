@@ -30,13 +30,16 @@ export default function Preloader({ loaded }: PreloaderProps) {
   const [shouldRender, setShouldRender] = useState(true);
 
   useIsomorphicLayoutEffect(() => {
-    if (sessionStorage.getItem('isa-preloader-seen')) {
+    if (typeof window !== 'undefined' && (window as any).__isaPreloaderSeen) {
       setShouldRender(false);
       document.documentElement.classList.add('skip-preloader');
     }
     const onKey = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'r')
-        sessionStorage.removeItem('isa-preloader-seen');
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'r') {
+        if (typeof window !== 'undefined') {
+          delete (window as any).__isaPreloaderSeen;
+        }
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -628,7 +631,9 @@ export default function Preloader({ loaded }: PreloaderProps) {
   // ── EXIT ──────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!loaded) return;
-    sessionStorage.setItem('isa-preloader-seen', '1');
+    if (typeof window !== 'undefined') {
+      (window as any).__isaPreloaderSeen = true;
+    }
     (async () => {
       const { default: gsap } = await import('gsap');
       const el = containerRef.current;
