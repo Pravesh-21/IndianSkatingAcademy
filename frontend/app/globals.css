@@ -1696,9 +1696,14 @@ ol {
 
 .wa-text {
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.02em;
-  opacity: 0.8;
+  opacity: 1;
+  color: #25d366;
+}
+
+html[data-theme="light"] .wa-text {
+  color: #075e54;
 }
 
 .wa-icon {

@@ -6,42 +6,44 @@
 /* --- CSS Custom Properties --- */
 :root {
   color-scheme: light;
-  
-  /* Premium Cool Ice-Blue & Silver Slate backgrounds */
-  --bg-primary: #F0F4F8;
-  --bg-elevated: #E2E8F0;
-  --bg-card: rgba(255, 255, 255, 0.8);
+
+  /* Premium Electric Ice-Blue & Midnight Ocean-Navy backgrounds */
+  --bg-primary: #F4F7FB;
+  --bg-elevated: #E6EEF5;
+  --bg-card: rgba(255, 255, 255, 0.82);
   --bg-card-solid: #FFFFFF;
-  
-  /* Sophisticated, deep slate-navy text for rich contrast */
-  --text-primary: #0F172A;
-  --text-secondary: #334155;
-  --text-muted: #64748B;
+
+  /* Sophisticated, deep ocean-navy text for rich contrast */
+  --text-primary: #0E1B2C;
+  --text-secondary: #24374E;
+  --text-muted: #4D6482;
   --text-on-accent: #FFFFFF;
-  
-  /* Restrained premium heading gradients - Slate Navy to Sky Blue */
-  --heading-from: #0F172A;
-  --heading-mid: #1E293B;
-  --heading-to: #3B82F6;
-  
-  /* Refined Blue Accents */
-  --white-dim: rgba(15, 23, 42, 0.6);
-  --blue: #2563EB; /* Professional, balanced blue */
-  --blue-bright: #3B82F6;
-  --blue-glow: rgba(37, 99, 235, 0.18);
-  --blue-dim: rgba(37, 99, 235, 0.08);
-  
+
+  /* Restrained premium heading gradients - Deep Midnight to Electric Cyan-Blue */
+  --heading-from: #0E1B2C;
+  --heading-mid: #1B324F;
+  --heading-to: #0088CC;
+
+  /* Electric Ice-Blue / Ocean Navy Accents */
+  --white-dim: rgba(14, 27, 44, 0.6);
+  --blue: #007BB8;
+  /* Vibrant athletic cyan-blue */
+  --blue-bright: #00C2FF;
+  --blue-glow: rgba(0, 194, 255, 0.18);
+  --blue-dim: rgba(0, 194, 255, 0.08);
+
   --green: #10B981;
   --green-glow: rgba(16, 185, 129, 0.15);
-  
-  --orange: #F97316;
-  --orange-glow: rgba(249, 115, 22, 0.15);
-  
-  /* Premium Glass and Blue-tinted borders */
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-border: rgba(37, 99, 235, 0.08);
-  --glass-border-hover: rgba(37, 99, 235, 0.2);
-  --spark-color: #2563EB;
+
+  --orange: #FF5A36;
+  /* Kinetic sport coral highlight */
+  --orange-glow: rgba(255, 90, 54, 0.15);
+
+  /* Premium Glass and Ice-Blue tinted borders */
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(0, 123, 184, 0.08);
+  --glass-border-hover: rgba(0, 123, 184, 0.2);
+  --spark-color: #007BB8;
 
   /* Legacy aliases */
   --black: var(--bg-primary);
@@ -210,8 +212,9 @@ html[data-theme="light"] .static-background::after {
 }
 
 html[data-theme="light"] .gradient-glow {
-  background: radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.2) 0%, transparent 50%);
-  opacity: 0.3;
+  background: radial-gradient(circle at 50% 30%, rgba(0, 194, 255, 0.12) 0%, rgba(34, 238, 80, 0.04) 40%, transparent 70%);
+  opacity: 0.75;
+  filter: blur(100px);
 }
 
 html[data-theme="light"] .noise-overlay {
@@ -484,6 +487,11 @@ html[data-theme="light"] .nav--scrolled {
   border-bottom-color: rgba(0, 153, 214, 0.2);
 }
 
+html[data-theme="light"] .nav-links a:hover,
+html[data-theme="light"] .nav-links a.active {
+  color: var(--blue) !important;
+}
+
 /* --- Theme toggle --- */
 .theme-toggle {
   display: inline-flex;
@@ -713,8 +721,9 @@ html[data-theme="light"] .theme-toggle-track {
   text-align: center;
   position: relative;
   pointer-events: none;
-  padding-top: 60px; 
-  padding-bottom: 15vh; /* Push content higher */
+  padding-top: 60px;
+  padding-bottom: 15vh;
+  /* Push content higher */
   isolation: isolate;
   background: var(--bg-primary);
 }
@@ -728,28 +737,24 @@ html[data-theme="light"] .theme-toggle-track {
   pointer-events: none;
   background:
     radial-gradient(ellipse 90% 55% at 50% 18%, rgba(0, 194, 255, 0.1) 0%, transparent 55%),
-    linear-gradient(
-      180deg,
+    linear-gradient(180deg,
       rgba(6, 6, 12, 0.55) 0%,
       rgba(6, 6, 12, 0.72) 45%,
       rgba(6, 6, 12, 0.94) 78%,
-      var(--bg-primary) 100%
-    );
+      var(--bg-primary) 100%);
 }
 
 html[data-theme="light"] .hero::before {
   background:
-    radial-gradient(ellipse 90% 55% at 50% 18%, rgba(0, 153, 214, 0.15) 0%, transparent 55%),
-    linear-gradient(
-      180deg,
-      rgba(242, 245, 252, 0.4) 0%,
-      rgba(242, 245, 252, 0.6) 45%,
-      rgba(242, 245, 252, 0.85) 78%,
-      var(--bg-primary) 100%
-    );
+    radial-gradient(ellipse 90% 55% at 50% 18%, rgba(0, 194, 255, 0.08) 0%, transparent 55%),
+    linear-gradient(180deg,
+      rgba(244, 247, 251, 0.08) 0%,
+      rgba(244, 247, 251, 0.2) 45%,
+      rgba(244, 247, 251, 0.5) 78%,
+      var(--bg-primary) 100%);
 }
 
-.hero > :not(.hero-marquee) {
+.hero> :not(.hero-marquee) {
   position: relative;
   z-index: 2;
 }
@@ -927,9 +932,19 @@ html[data-theme="light"] .hero::before {
 }
 
 @keyframes scrollWheel {
-  0% { transform: translate(-50%, 0); opacity: 0; }
-  30% { opacity: 1; }
-  100% { transform: translate(-50%, 14px); opacity: 0; }
+  0% {
+    transform: translate(-50%, 0);
+    opacity: 0;
+  }
+
+  30% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(-50%, 14px);
+    opacity: 0;
+  }
 }
 
 /* --- Hero Image Marquee --- */
@@ -943,20 +958,16 @@ html[data-theme="light"] .hero::before {
   display: flex;
   pointer-events: none;
   z-index: -1;
-  mask-image: linear-gradient(
-    180deg,
-    rgba(0, 0, 0, 0.4) 0%,
-    black 25%,
-    black 70%,
-    transparent 92%
-  );
-  -webkit-mask-image: linear-gradient(
-    180deg,
-    rgba(0, 0, 0, 0.4) 0%,
-    black 25%,
-    black 70%,
-    transparent 92%
-  );
+  mask-image: linear-gradient(180deg,
+      rgba(0, 0, 0, 0.4) 0%,
+      black 25%,
+      black 70%,
+      transparent 92%);
+  -webkit-mask-image: linear-gradient(180deg,
+      rgba(0, 0, 0, 0.4) 0%,
+      black 25%,
+      black 70%,
+      transparent 92%);
 }
 
 .hero-marquee::after {
@@ -965,13 +976,11 @@ html[data-theme="light"] .hero::before {
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  background: linear-gradient(
-    180deg,
-    rgba(6, 6, 12, 0.15) 0%,
-    transparent 35%,
-    rgba(6, 6, 12, 0.45) 72%,
-    rgba(6, 6, 12, 0.85) 100%
-  );
+  background: linear-gradient(180deg,
+      rgba(6, 6, 12, 0.15) 0%,
+      transparent 35%,
+      rgba(6, 6, 12, 0.45) 72%,
+      rgba(6, 6, 12, 0.85) 100%);
 }
 
 .marquee-track {
@@ -1825,13 +1834,12 @@ html[data-theme="light"] .marquee-item:hover img {
 
 /* --- Coaches Section --- */
 .coaches-section {
-  padding: 0 24px 0;
+  padding: 0 24px 100px;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
   margin-top: -120px;
-  margin-bottom: -80px;
 }
 
 .coaches-scroll {
@@ -2197,6 +2205,7 @@ html[data-theme="light"] .marquee-item:hover img {
   .footer-nav {
     grid-template-columns: 1fr;
   }
+
   .footer-top {
     grid-template-columns: 1fr;
     gap: 60px;
@@ -2272,9 +2281,14 @@ html[data-theme="light"] .marquee-item:hover img {
 
 .wa-text {
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.02em;
-  opacity: 0.8;
+  opacity: 1;
+  color: #25d366;
+}
+
+html[data-theme="light"] .wa-text {
+  color: #075e54;
 }
 
 .wa-icon {
@@ -2905,7 +2919,8 @@ html[data-theme="light"] .coach-card {
 html[data-theme="light"] .coach-card:hover {
   background: var(--bg-card-solid);
   border-color: var(--blue);
-  box-shadow: 0 16px 48px rgba(37, 99, 235, 0.15); /* Clean, professional shadow instead of black glow */
+  box-shadow: 0 16px 48px rgba(37, 99, 235, 0.15);
+  /* Clean, professional shadow instead of black glow */
 }
 
 /* --- Location Cards Light Mode Overrides --- */
@@ -2945,6 +2960,7 @@ html[data-theme="light"] .program-card:hover {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   html.theme-transitioning,
   html.theme-transitioning * {
     transition: none !important;
@@ -3086,7 +3102,7 @@ html[data-theme="light"] .program-overlay {
   overflow: hidden;
   display: flex;
   position: relative;
-  box-shadow: 
+  box-shadow:
     0 40px 120px rgba(0, 0, 0, 0.6),
     0 0 80px rgba(0, 194, 255, 0.1);
   border: 1px solid var(--glass-border);
@@ -3234,17 +3250,17 @@ html[data-theme="light"] .program-overlay {
     max-height: 90vh;
     overflow-y: auto;
   }
-  
+
   .expanded-left {
     height: 300px;
     flex: none;
   }
-  
+
   .expanded-right {
     padding: 40px;
     flex: none;
   }
-  
+
   .expanded-meta-grid {
     grid-template-columns: 1fr;
     gap: 20px;
@@ -3535,8 +3551,15 @@ html[data-theme="light"] .program-overlay {
 }
 
 @keyframes fadeSlideUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .join-actions-label {
@@ -3622,7 +3645,9 @@ html[data-theme="light"] .program-overlay {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Error message */
@@ -3650,9 +3675,19 @@ html[data-theme="light"] .program-overlay {
 }
 
 @keyframes bounceIn {
-  0%   { transform: scale(0.5); opacity: 0; }
-  70%  { transform: scale(1.1); }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+
+  70% {
+    transform: scale(1.1);
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .join-success-title {
@@ -3896,7 +3931,7 @@ html[data-theme="light"] .event-card:hover {
   border-radius: 12px;
   z-index: 600;
   transition: border-color 0.3s var(--ease-out-expo),
-              background 0.3s var(--ease-out-expo);
+    background 0.3s var(--ease-out-expo);
 }
 
 .nav-hamburger:hover {
@@ -3911,8 +3946,8 @@ html[data-theme="light"] .event-card:hover {
   background: var(--text-primary);
   border-radius: 2px;
   transition: transform 0.35s var(--ease-out-expo),
-              opacity 0.25s var(--ease-out-expo),
-              width 0.35s var(--ease-out-expo);
+    opacity 0.25s var(--ease-out-expo),
+    width 0.35s var(--ease-out-expo);
   transform-origin: center;
 }
 
@@ -3941,8 +3976,9 @@ html[data-theme="light"] .event-card:hover {
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.4s var(--ease-out-expo),
-              visibility 0.4s var(--ease-out-expo);
-  display: none; /* hidden on desktop */
+    visibility 0.4s var(--ease-out-expo);
+  display: none;
+  /* hidden on desktop */
 }
 
 .nav-mobile-overlay--open {
@@ -3991,6 +4027,7 @@ html[data-theme="light"] .event-card:hover {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -4032,7 +4069,7 @@ html[data-theme="light"] .event-card:hover {
   font-size: 18px;
   opacity: 0;
   transition: opacity 0.3s var(--ease-out-expo),
-              transform 0.3s var(--ease-out-expo);
+    transform 0.3s var(--ease-out-expo);
 }
 
 .nav-mobile-link:hover .nav-mobile-link-arrow {
@@ -4079,6 +4116,7 @@ html[data-theme="light"] .nav-hamburger:hover {
    RESPONSIVE BREAKPOINT — ≤ 768px
    ============================================== */
 @media (max-width: 768px) {
+
   /* Hide desktop links, show hamburger */
   .nav-links {
     display: none !important;

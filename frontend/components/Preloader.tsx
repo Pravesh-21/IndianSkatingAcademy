@@ -2,511 +2,886 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
-const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+const useIsomorphicLayoutEffect =
+  typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 interface PreloaderProps {
   loaded: boolean;
 }
 
+// ─── Pure helpers ────────────────────────────────────────────────────────────
+const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+const remap = (v: number, a: number, b: number, c: number, d: number) =>
+  c + (d - c) * clamp((v - a) / (b - a), 0, 1);
+const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+const easeInOutQuart = (t: number) =>
+  t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2;
+
+// ─── Component ───────────────────────────────────────────────────────────────
 export default function Preloader({ loaded }: PreloaderProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const canvasRef    = useRef<HTMLCanvasElement>(null);
-  const counterRef   = useRef<HTMLSpanElement>(null);
-  const barFillRef   = useRef<HTMLDivElement>(null);
-  const hasAnimated  = useRef(false);
-
-  // Start true so we render instantly (no 0.2s flash of homepage)
-  // useLayoutEffect will instantly hide it before paint if already seen
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const counterRef = useRef<HTMLSpanElement>(null);
+  const barFillRef = useRef<HTMLDivElement>(null);
+  const rpmRef = useRef<HTMLSpanElement>(null);
+  const velRef = useRef<HTMLSpanElement>(null);
+  const torqueRef = useRef<HTMLSpanElement>(null);
+  const statusRef = useRef<HTMLSpanElement>(null);
   const [shouldRender, setShouldRender] = useState(true);
 
   useIsomorphicLayoutEffect(() => {
-    // Listen for hard refresh keyboard shortcuts to clear the seen flag
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'r') {
+    if (sessionStorage.getItem('isa-preloader-seen')) {
+      setShouldRender(false);
+      document.documentElement.classList.add('skip-preloader');
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'r')
         sessionStorage.removeItem('isa-preloader-seen');
-      }
     };
-    window.addEventListener('keydown', handleKeyDown);
-
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
   }, []);
 
+  // ── CANVAS ────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!shouldRender) return;
 
     const canvas = canvasRef.current!;
-    const ctx    = canvas.getContext('2d')!;
-    const W      = canvas.width  = window.innerWidth;
-    const H      = canvas.height = window.innerHeight;
+    const ctx = canvas.getContext('2d')!;
+    const W = canvas.width = window.innerWidth;
+    const H = canvas.height = window.innerHeight;
 
-    // ── Palette ──────────────────────────────────────────────────────────────
-    const CYAN      = '#00C2FF';
-    const BG        = '#020810';
+    // ── Strict palette: blue · white · gray ─────────────────────────────────
+    const C_CYAN = '#00C8FF';            // primary electric blue
+    const C_CYAN2 = 'rgba(0,200,255,';   // with alpha suffix
+    const C_WHITE = 'rgba(232,248,255,'; // near-white with alpha suffix
+    const C_STEEL = 'rgba(100,160,210,'; // steel blue-gray
+    const C_DSTEEL = 'rgba(40,70,110,';   // dark steel
+    const BG = '#04060C';
 
     // ── Geometry ─────────────────────────────────────────────────────────────
-    const WHEEL_R   = Math.min(52, W * 0.075);
-    const SPOKE_N   = 8;
-    const BEARING_R = WHEEL_R * 0.16;
+    const WHEEL_R = Math.min(68, W * 0.09);
+    const TIRE_W = WHEEL_R * 0.155;      // thickness of tire band
+    const TIRE_MID = WHEEL_R - TIRE_W / 2; // arc radius for mid of tire
+    const SPOKE_N = 6;
+    const BEARING_R = WHEEL_R * 0.13;
+    const GROUND_Y = H * 0.52;
+    const FONT_SIZE = WHEEL_R * 2.4;
 
-    // Ground line — the wheel rolls ON TOP of this line
-    const GROUND_Y  = H * 0.54;
-    // Wheel center sits exactly on the ground
-    const WHEEL_CY  = GROUND_Y;
+    // ── Phase constants ──────────────────────────────────────────────────────
+    const TOTAL_MS = 4000;
+    const PH_GRID = 0.18;   // hex grid crystallises
+    const PH_MAT = 0.34;   // wheel materialises as wireframe
+    const PH_SPIN = 0.52;   // solidifies & spins up
+    const PH_ROLL = 0.82;   // rolls across, stamps ISA
+    const PH_SETL = 0.95;   // overshoot / settle
+    // 0.95 → 1.0 : idle glow pulse
 
-    // ISA rendered big on an offscreen canvas; wheel reveals it by rolling over
-    const FONT_SIZE = WHEEL_R * 2;
+    const STATUS = ['GRID.INIT', 'BRG.CAL', 'RPM.SPINUP', 'SURFACE.ENG', 'STAMP.EXE', 'ISA.READY'];
 
-    // ── Offscreen: stamp canvas (the "ink" that gets revealed) ───────────────
-    // We pre-render "ISA" onto a dedicated canvas, then use it as a texture
-    // that gets revealed left-to-right as the wheel passes over.
+    // ── Stamp canvas (ISA text, blue/white only) ─────────────────────────────
     const stampCanvas = document.createElement('canvas');
-    stampCanvas.width  = W;
-    stampCanvas.height = H;
+    stampCanvas.width = W; stampCanvas.height = H;
     const sCtx = stampCanvas.getContext('2d')!;
 
-    // Where the ISA text will be centered vertically around the ground line
-    const TEXT_Y = GROUND_Y;
-
-    // Measure and place "ISA" centered horizontally
-    sCtx.font      = `900 ${FONT_SIZE}px 'Orbitron', sans-serif`;
-    sCtx.textAlign = 'center';
-    sCtx.textBaseline = 'middle';
-
-    // Draw ISA on stamp canvas — thick, glowing
-    // Shadow layers for the ink-on-surface feel
-    sCtx.shadowColor = CYAN;
-    sCtx.shadowBlur  = 28;
-    sCtx.fillStyle   = CYAN;
-    sCtx.fillText('ISA', W / 2, TEXT_Y);
-
-    sCtx.shadowBlur  = 8;
-    sCtx.fillStyle   = '#ffffff';
-    sCtx.fillText('ISA', W / 2, TEXT_Y);
-
-    // ── Measure where the ISA text actually starts and ends ───────────────────
-    ctx.font = `900 ${FONT_SIZE}px 'Orbitron', sans-serif`;
-    const metrics    = ctx.measureText('ISA');
-    const textLeft   = W / 2 - metrics.width / 2;
-    const textRight  = W / 2 + metrics.width / 2;
-
-    // Wheel starts before the text and ends after
-    const START_X    = textLeft - WHEEL_R * 3;
-    const END_X      = textRight + WHEEL_R * 3;
+    sCtx.font = `900 ${FONT_SIZE}px 'Orbitron', sans-serif`;
+    const met = sCtx.measureText('ISA');
+    const textLeft = W / 2 - met.width / 2;
+    const textRight = W / 2 + met.width / 2;
+    const START_X = textLeft - WHEEL_R * 3.5;
+    const END_X = textRight + WHEEL_R * 3.5;
     const TOTAL_DIST = END_X - START_X;
 
-    // ── Travel timing ─────────────────────────────────────────────────────────
-    const TOTAL_MS     = 4800;
-    const PHASE_INTRO  = 0.08;   // wheel appears, then starts rolling
-    const PHASE_ROLL   = 0.80;   // rolling across ISA
-    const PHASE_SETTLE = 1.00;   // coasts to stop
+    const renderStamp = () => {
+      sCtx.clearRect(0, 0, W, H);
+      sCtx.font = `900 ${FONT_SIZE}px 'Orbitron', sans-serif`;
+      sCtx.textAlign = 'center'; sCtx.textBaseline = 'middle';
+      // Wide blue halo
+      sCtx.shadowColor = C_CYAN; sCtx.shadowBlur = 52;
+      sCtx.fillStyle = C_CYAN;
+      sCtx.fillText('ISA', W / 2, GROUND_Y);
+      // Bright blue body
+      sCtx.shadowBlur = 18;
+      sCtx.fillText('ISA', W / 2, GROUND_Y);
+      // White-blue core
+      sCtx.shadowBlur = 5;
+      sCtx.fillStyle = C_WHITE + '0.96)';
+      sCtx.fillText('ISA', W / 2, GROUND_Y);
+    };
 
-    // ── Easing ───────────────────────────────────────────────────────────────
-    const easeInOut = (t: number) => t < 0.5
-      ? 4 * t * t * t
-      : 1 - Math.pow(-2 * t + 2, 3) / 2;
-    const easeOut3  = (t: number) => 1 - Math.pow(1 - t, 3);
-    const clamp     = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
-    const remap     = (v: number, a: number, b: number, c: number, d: number) =>
-      c + (d - c) * clamp((v - a) / (b - a), 0, 1);
+    // ── Hex grid ─────────────────────────────────────────────────────────────
+    const HEX = 30;
+    const HEX_W = HEX * Math.sqrt(3);
+    const HEX_H = HEX * 2;
+    const cols = Math.ceil(W / HEX_W) + 2;
+    const rows = Math.ceil(H / (HEX_H * 0.75)) + 2;
 
-    // ── Stars (static) ────────────────────────────────────────────────────────
-    const STARS = Array.from({ length: 70 }, () => ({
-      x: Math.random() * W,
-      y: Math.random() * (GROUND_Y - WHEEL_R * 3.5),
-      r: Math.random() * 1.0 + 0.15,
-      a: Math.random() * 0.35 + 0.06,
-    }));
+    interface HexCell { x: number; y: number; delay: number }
+    const hexCells: HexCell[] = [];
+    for (let r = 0; r < rows; r++)
+      for (let c = 0; c < cols; c++) {
+        const x = c * HEX_W + (r % 2 === 0 ? 0 : HEX_W / 2) - HEX_W;
+        const y = r * HEX_H * 0.75 - HEX_H;
+        const dist = Math.hypot(x - W / 2, y - H / 2);
+        hexCells.push({ x, y, delay: dist / (Math.max(W, H) * 0.7) });
+      }
 
-    // ── Dust particles ────────────────────────────────────────────────────────
-    interface Particle { x: number; y: number; vx: number; vy: number; life: number; max: number; r: number; }
+    const drawHex = (x: number, y: number, size: number, a: number) => {
+      if (a <= 0) return;
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const ang = (Math.PI / 3) * i - Math.PI / 6;
+        const px = x + size * Math.cos(ang);
+        const py = y + size * Math.sin(ang);
+        i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+      ctx.strokeStyle = C_CYAN2 + (a * 0.11) + ')';
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+      ctx.fillStyle = C_CYAN2 + (a * 0.018) + ')';
+      ctx.fill();
+    };
+
+    const drawHexGrid = (t: number, maxA: number) => {
+      hexCells.forEach(h => {
+        const lt = clamp((t - h.delay) / 0.4, 0, 1);
+        drawHex(h.x, h.y, HEX * 0.9, easeOutCubic(lt) * maxA);
+      });
+    };
+
+    // ── Blueprint wireframe wheel ─────────────────────────────────────────────
+    const drawWireframe = (cx: number, cy: number, a: number) => {
+      if (a <= 0) return;
+      ctx.save();
+      ctx.globalAlpha = a;
+      ctx.translate(cx, cy);
+      ctx.setLineDash([4, 3]);
+      ctx.strokeStyle = C_CYAN2 + '0.65)';
+      ctx.lineWidth = 0.8;
+      [1, 0.75, 0.52, 0.25].forEach(f => {
+        ctx.beginPath(); ctx.arc(0, 0, WHEEL_R * f, 0, Math.PI * 2); ctx.stroke();
+      });
+      for (let i = 0; i < SPOKE_N * 2; i++) {
+        const ang = (i / (SPOKE_N * 2)) * Math.PI * 2;
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(ang) * BEARING_R * 2.2, Math.sin(ang) * BEARING_R * 2.2);
+        ctx.lineTo(Math.cos(ang) * WHEEL_R * 0.73, Math.sin(ang) * WHEEL_R * 0.73);
+        ctx.stroke();
+      }
+      ctx.setLineDash([]);
+      ctx.restore();
+    };
+
+    // ── Blueprint annotations ─────────────────────────────────────────────────
+    const drawAnnotations = (cx: number, cy: number, a: number, rot: number) => {
+      if (a <= 0) return;
+      ctx.save();
+      ctx.globalAlpha = a * 0.42;
+      ctx.translate(cx, cy);
+      ctx.setLineDash([3, 5]);
+      ctx.lineWidth = 0.5;
+      [0, Math.PI / 4, Math.PI / 2, (3 * Math.PI) / 4].forEach(ang => {
+        const ca = Math.cos(ang + rot), sa = Math.sin(ang + rot);
+        ctx.strokeStyle = C_CYAN2 + '0.5)';
+        ctx.beginPath();
+        ctx.moveTo(ca * WHEEL_R * 1.4, sa * WHEEL_R * 1.4);
+        ctx.lineTo(ca * WHEEL_R * 2.0, sa * WHEEL_R * 2.0);
+        ctx.stroke();
+        const pc = Math.cos(ang + rot + Math.PI / 2), ps = Math.sin(ang + rot + Math.PI / 2);
+        const tx = ca * WHEEL_R * 2.0, ty = sa * WHEEL_R * 2.0;
+        ctx.beginPath();
+        ctx.moveTo(tx - pc * 5, ty - ps * 5);
+        ctx.lineTo(tx + pc * 5, ty + ps * 5);
+        ctx.stroke();
+      });
+      ctx.strokeStyle = C_CYAN2 + '0.18)';
+      ctx.beginPath();
+      ctx.moveTo(-WHEEL_R * 2.5, 0); ctx.lineTo(WHEEL_R * 2.5, 0);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+    };
+
+    // ── WHEEL — rounded skating wheel design ──────────────────────────────────
+    //   Looks like a proper urethane inline-skate / roller wheel:
+    //   thick tire band (no sharp teeth), curved tapered spokes, clean hub.
+    const drawWheel = (
+      cx: number, cy: number, rot: number,
+      alpha: number, glow: number,
+      blur: number        // 0–1 spin-blur intensity
+    ) => {
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.translate(cx, cy);
+
+      // ── Outer halo ──────────────────────────────────────────────────────────
+      if (glow > 0) {
+        const hR = WHEEL_R * (2.0 + blur * 1.4);
+        const hg = ctx.createRadialGradient(0, 0, WHEEL_R * 0.6, 0, 0, hR);
+        hg.addColorStop(0, C_CYAN2 + (0.22 * glow) + ')');
+        hg.addColorStop(0.5, C_CYAN2 + (0.06 * glow) + ')');
+        hg.addColorStop(1, 'transparent');
+        ctx.fillStyle = hg;
+        ctx.beginPath(); ctx.arc(0, 0, hR, 0, Math.PI * 2); ctx.fill();
+      }
+
+      // ── Spin-blur ghost rings ────────────────────────────────────────────────
+      if (blur > 0.06) {
+        for (let i = 1; i <= 5; i++) {
+          ctx.strokeStyle = C_CYAN2 + (blur * 0.055 * (6 - i) / 5) + ')';
+          ctx.lineWidth = i * 3.5;
+          ctx.beginPath(); ctx.arc(0, 0, TIRE_MID, 0, Math.PI * 2); ctx.stroke();
+        }
+      }
+
+      // ── TIRE BAND — thick rounded ring (the urethane wheel body) ────────────
+      // Step 1: draw solid tire fill so it looks like a physical band
+      const tireGrad = ctx.createRadialGradient(0, 0, TIRE_MID - TIRE_W * 0.5, 0, 0, TIRE_MID + TIRE_W * 0.5);
+      tireGrad.addColorStop(0, C_DSTEEL + '0.6)');
+      tireGrad.addColorStop(0.45, C_CYAN2 + (0.25 + 0.25 * glow) + ')');
+      tireGrad.addColorStop(0.8, C_CYAN2 + (0.6 + 0.3 * glow) + ')');
+      tireGrad.addColorStop(1, C_WHITE + '0.1)');
+      ctx.strokeStyle = C_CYAN; // overridden by gradient approach below
+      // Draw via donut: outer circle filled, inner masked out
+      ctx.beginPath();
+      ctx.arc(0, 0, WHEEL_R + 1, 0, Math.PI * 2);
+      ctx.arc(0, 0, WHEEL_R - TIRE_W, 0, Math.PI * 2, true); // hole
+      ctx.fillStyle = tireGrad;
+      ctx.fill();
+
+      // Step 2: bright outer edge line
+      ctx.shadowColor = C_CYAN;
+      ctx.shadowBlur = 8 + 18 * glow;
+      ctx.strokeStyle = C_CYAN2 + (0.75 + 0.25 * glow) + ')';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath(); ctx.arc(0, 0, WHEEL_R, 0, Math.PI * 2); ctx.stroke();
+
+      // Step 3: inner tire edge (lighter rim groove)
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = C_CYAN2 + '0.35)';
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(0, 0, WHEEL_R - TIRE_W + 1, 0, Math.PI * 2); ctx.stroke();
+
+      // Step 4: TREAD SEGMENTS — rounded arc blocks that rotate with wheel
+      //   Replaces gear teeth entirely. Short rounded arcs = soft tread pattern.
+      ctx.save();
+      ctx.rotate(rot);
+      const TREAD_N = 18;
+      const treadSlot = (Math.PI * 2) / TREAD_N;
+      const treadLen = treadSlot * 0.62; // 62% coverage → visible gaps between blocks
+      for (let i = 0; i < TREAD_N; i++) {
+        const startA = i * treadSlot - treadLen / 2;
+        ctx.lineCap = 'round'; // ← round caps = natural, not blade-like
+        ctx.strokeStyle = C_CYAN2 + (0.55 + 0.3 * glow) + ')';
+        ctx.shadowColor = C_CYAN;
+        ctx.shadowBlur = 3 + 8 * glow;
+        ctx.lineWidth = TIRE_W * 0.78; // wide = tire looks thick
+        ctx.beginPath();
+        ctx.arc(0, 0, TIRE_MID, startA, startA + treadLen);
+        ctx.stroke();
+      }
+      ctx.lineCap = 'butt';
+      ctx.restore();
+
+      // ── Inner structural ring ────────────────────────────────────────────────
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = C_STEEL + '0.3)';
+      ctx.lineWidth = 0.8;
+      ctx.beginPath(); ctx.arc(0, 0, WHEEL_R * 0.65, 0, Math.PI * 2); ctx.stroke();
+
+      // ── CURVED SPOKES ────────────────────────────────────────────────────────
+      //   Use quadratic bezier arcs instead of straight lines → natural wheel feel
+      ctx.save();
+      ctx.rotate(rot);
+      for (let i = 0; i < SPOKE_N; i++) {
+        const ang = (i / SPOKE_N) * Math.PI * 2;
+        const cos = Math.cos(ang), sin = Math.sin(ang);
+        // Hub end (wide) and rim end (narrow) of the spoke
+        const hx = cos * (BEARING_R * 2.2), hy = sin * (BEARING_R * 2.2);
+        const rx = cos * (WHEEL_R - TIRE_W - 2), ry = sin * (WHEEL_R - TIRE_W - 2);
+        // Control point: perpendicular offset for gentle curve
+        const perp = Math.PI / (SPOKE_N * 1.5);
+        const cpAng = ang + perp;
+        const cpR = WHEEL_R * 0.38;
+        const cpx = Math.cos(cpAng) * cpR, cpy = Math.sin(cpAng) * cpR;
+
+        // Spoke tapers: thick near hub, thin at rim — simulate with lineWidth 
+        ctx.shadowColor = C_CYAN;
+        ctx.shadowBlur = 4 + 10 * glow;
+        ctx.strokeStyle = C_CYAN2 + (0.7 + 0.25 * glow) + ')';
+        ctx.lineWidth = 2.8;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(hx, hy);
+        ctx.quadraticCurveTo(cpx, cpy, rx, ry);
+        ctx.stroke();
+
+        // Thin centre line on spoke (gives depth / two-tone feel)
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = C_WHITE + '0.3)';
+        ctx.lineWidth = 0.6;
+        ctx.beginPath();
+        ctx.moveTo(hx, hy);
+        ctx.quadraticCurveTo(cpx, cpy, rx, ry);
+        ctx.stroke();
+        ctx.lineCap = 'butt';
+      }
+      ctx.restore();
+
+      // ── Hub disc ─────────────────────────────────────────────────────────────
+      ctx.shadowColor = C_CYAN;
+      ctx.shadowBlur = 14 + 10 * glow;
+      const hubGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, BEARING_R * 2.0);
+      hubGrad.addColorStop(0, C_WHITE + '0.9)');
+      hubGrad.addColorStop(0.5, C_CYAN2 + '0.7)');
+      hubGrad.addColorStop(1, C_DSTEEL + '0.5)');
+      ctx.fillStyle = hubGrad;
+      ctx.beginPath(); ctx.arc(0, 0, BEARING_R * 2.0, 0, Math.PI * 2); ctx.fill();
+
+      // Hub ring
+      ctx.strokeStyle = C_CYAN2 + (0.5 + 0.4 * glow) + ')';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(0, 0, BEARING_R * 2.0, 0, Math.PI * 2); ctx.stroke();
+
+      // Center bearing point
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = BG;
+      ctx.beginPath(); ctx.arc(0, 0, BEARING_R * 0.5, 0, Math.PI * 2); ctx.fill();
+
+      ctx.restore();
+    };
+
+    // ── Particle system — all blue/white/gray, no orange ─────────────────────
+    interface Particle { x: number; y: number; vx: number; vy: number; life: number; maxLife: number; r: number; type: 'spark' | 'dust' }
     const particles: Particle[] = [];
 
-    const spawnDust = (wx: number) => {
-      if (Math.random() > 0.45) return;
+    const spawnParticles = (wx: number) => {
+      if (Math.random() > 0.55) return;
+      const ang = Math.PI + (Math.random() - 0.5) * Math.PI * 0.85;
+      const speed = Math.random() * 3 + 0.7;
       particles.push({
-        x: wx + (Math.random() - 0.5) * WHEEL_R * 0.6,
-        y: GROUND_Y + WHEEL_R,
-        vx: -(Math.random() * 0.8 + 0.1),
-        vy: -(Math.random() * 0.9 + 0.1),
-        life: 1, max: 40 + Math.random() * 30,
-        r: Math.random() * 2 + 0.3,
+        x: wx + (Math.random() - 0.5) * WHEEL_R * 0.4,
+        y: GROUND_Y + WHEEL_R * 0.5,
+        vx: Math.cos(ang) * speed,
+        vy: Math.sin(ang) * speed - 0.6,
+        life: 1, maxLife: 20 + Math.random() * 30,
+        r: Math.random() * 1.4 + 0.3,
+        type: Math.random() > 0.5 ? 'spark' : 'dust',
       });
     };
 
     const tickParticles = () => {
       for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
-        p.x += p.vx; p.y += p.vy; p.vy *= 0.94;
-        p.life -= 1 / p.max;
+        p.x += p.vx; p.y += p.vy;
+        p.vy += 0.11; p.vx *= 0.97;
+        p.life -= 1 / p.maxLife;
         if (p.life <= 0) { particles.splice(i, 1); continue; }
+
+        if (p.type === 'spark') {
+          // Pure Electric Cyan-White spark trail
+          ctx.strokeStyle = C_WHITE + (p.life * 0.38) + ')';
+          ctx.lineWidth = 0.8;
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(p.x - p.vx * 3.5, p.y - p.vy * 3.5);
+          ctx.stroke();
+          ctx.fillStyle = C_CYAN2 + (p.life * 0.95) + ')';
+        } else {
+          // Steel-gray dust
+          ctx.fillStyle = C_STEEL + (p.life * 0.4) + ')';
+        }
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(0,194,255,${p.life * 0.4})`;
+        ctx.arc(p.x, p.y, p.r * p.life, 0, Math.PI * 2);
         ctx.fill();
       }
     };
 
-    // ── Draw wheel ────────────────────────────────────────────────────────────
-    const drawWheel = (cx: number, cy: number, rot: number, alpha: number, glow: number) => {
-      ctx.save();
-      ctx.globalAlpha = alpha;
-      ctx.translate(cx, cy);
-
-      // Halo
-      if (glow > 0) {
-        const g = ctx.createRadialGradient(0, 0, WHEEL_R * 0.4, 0, 0, WHEEL_R * 2.2);
-        g.addColorStop(0,   `rgba(0,194,255,${0.18 * glow})`);
-        g.addColorStop(1,   'transparent');
-        ctx.fillStyle = g;
+    // ── Ground surface ────────────────────────────────────────────────────────
+    const drawSurface = (revealX: number) => {
+      // Tick grid
+      const step = WHEEL_R * 1.6;
+      ctx.strokeStyle = C_CYAN2 + '0.04)';
+      ctx.lineWidth = 0.5;
+      for (let x = 0; x < W; x += step) {
         ctx.beginPath();
-        ctx.arc(0, 0, WHEEL_R * 2.2, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      // Tread segments (rotate with wheel)
-      ctx.save();
-      ctx.rotate(rot);
-      for (let i = 0; i < 14; i++) {
-        ctx.save();
-        ctx.rotate((i / 14) * Math.PI * 2);
-        ctx.strokeStyle = `rgba(0,194,255,${0.28 + glow * 0.12})`;
-        ctx.lineWidth   = 5;
-        ctx.lineCap     = 'round';
-        ctx.beginPath();
-        ctx.arc(0, 0, WHEEL_R - 3, -Math.PI / 18, Math.PI / 18);
-        ctx.stroke();
-        ctx.restore();
-      }
-      ctx.restore();
-
-      // Outer rim
-      ctx.shadowColor = CYAN;
-      ctx.shadowBlur  = 8 + 16 * glow;
-      ctx.strokeStyle = CYAN;
-      ctx.lineWidth   = 2.5;
-      ctx.beginPath();
-      ctx.arc(0, 0, WHEEL_R, 0, Math.PI * 2);
-      ctx.stroke();
-
-      // Inner ring
-      ctx.shadowBlur  = 0;
-      ctx.strokeStyle = `rgba(0,194,255,0.35)`;
-      ctx.lineWidth   = 1;
-      ctx.beginPath();
-      ctx.arc(0, 0, WHEEL_R * 0.54, 0, Math.PI * 2);
-      ctx.stroke();
-
-      // Spokes
-      ctx.save();
-      ctx.rotate(rot);
-      for (let i = 0; i < SPOKE_N; i++) {
-        const a = (i / SPOKE_N) * Math.PI * 2;
-        ctx.shadowColor = CYAN;
-        ctx.shadowBlur  = 3 + 7 * glow;
-        ctx.strokeStyle = `rgba(0,194,255,${0.6 + 0.3 * glow})`;
-        ctx.lineWidth   = 1.3;
-        ctx.beginPath();
-        ctx.moveTo(Math.cos(a) * BEARING_R * 1.4, Math.sin(a) * BEARING_R * 1.4);
-        ctx.lineTo(Math.cos(a) * WHEEL_R * 0.51,  Math.sin(a) * WHEEL_R * 0.51);
+        ctx.moveTo(x, GROUND_Y + WHEEL_R * 0.75);
+        ctx.lineTo(x, GROUND_Y + WHEEL_R * 1.25);
         ctx.stroke();
       }
-      ctx.restore();
 
-      // Bearing
-      ctx.shadowColor = CYAN;
-      ctx.shadowBlur  = 14 + 10 * glow;
-      ctx.fillStyle   = CYAN;
-      ctx.beginPath();
-      ctx.arc(0, 0, BEARING_R, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Void
-      ctx.shadowBlur = 0;
-      ctx.fillStyle  = BG;
-      ctx.beginPath();
-      ctx.arc(0, 0, BEARING_R * 0.42, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.restore();
-    };
-
-    // ── Draw ground surface ───────────────────────────────────────────────────
-    const drawSurface = (revealUpTo: number) => {
-      // Full ground line (faint)
-      ctx.strokeStyle = 'rgba(0,194,255,0.08)';
-      ctx.lineWidth   = 1;
+      // Faint base line
+      ctx.strokeStyle = C_CYAN2 + '0.07)';
+      ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(0, GROUND_Y + WHEEL_R);
       ctx.lineTo(W, GROUND_Y + WHEEL_R);
       ctx.stroke();
 
-      // Revealed trail (left of wheel) — brighter
-      if (revealUpTo > 0) {
-        const g = ctx.createLinearGradient(0, 0, revealUpTo, 0);
-        g.addColorStop(0,   'rgba(0,194,255,0.04)');
-        g.addColorStop(0.7, 'rgba(0,194,255,0.18)');
-        g.addColorStop(1,   'rgba(0,194,255,0.55)');
+      // Revealed trail — blue only, no heat tinting
+      if (revealX > 0) {
+        const g = ctx.createLinearGradient(0, 0, revealX, 0);
+        g.addColorStop(0, C_CYAN2 + '0.03)');
+        g.addColorStop(0.5, C_CYAN2 + '0.12)');
+        g.addColorStop(0.88, C_CYAN2 + '0.42)');
+        g.addColorStop(1, C_WHITE + '0.7)');
         ctx.strokeStyle = g;
-        ctx.lineWidth   = 1.5;
+        ctx.lineWidth = 2;
+        ctx.shadowColor = C_CYAN;
+        ctx.shadowBlur = 4;
         ctx.beginPath();
-        ctx.moveTo(0,          GROUND_Y + WHEEL_R);
-        ctx.lineTo(revealUpTo, GROUND_Y + WHEEL_R);
+        ctx.moveTo(0, GROUND_Y + WHEEL_R);
+        ctx.lineTo(revealX, GROUND_Y + WHEEL_R);
         ctx.stroke();
+        ctx.shadowBlur = 0;
       }
     };
 
-    // ── Reveal ISA: clip to left of wheelX ───────────────────────────────────
-    // The key trick: we draw the stampCanvas but clip it to a rectangle
-    // that grows as the wheel moves right — so ISA appears only where
-    // the wheel has already passed, as if the tread inked it.
-    const drawRevealedISA = (revealUpTo: number, fadeIn: number) => {
-      if (revealUpTo <= textLeft - WHEEL_R * 0.5) return;
-
+    // ── ISA reveal ────────────────────────────────────────────────────────────
+    const drawISA = (revealX: number, fadeIn: number) => {
+      if (revealX <= textLeft - WHEEL_R || fadeIn <= 0) return;
       ctx.save();
       ctx.globalAlpha = fadeIn;
-
-      // Clip: only show pixels left of where the wheel contact point is
-      // The contact zone leads by half a wheel-radius for a "just printed" feel
-      const clipRight = revealUpTo + WHEEL_R * 0.5;
       ctx.beginPath();
-      ctx.rect(0, 0, clipRight, H);
+      ctx.rect(0, 0, revealX + WHEEL_R * 0.65, H);
       ctx.clip();
-
       ctx.drawImage(stampCanvas, 0, 0);
       ctx.restore();
     };
 
-    // ── Motion streaks ────────────────────────────────────────────────────────
+    // ── Motion streaks — blue/gray only ──────────────────────────────────────
     const drawStreaks = (wx: number, speed: number) => {
-      if (speed < 0.3) return;
-      for (let i = 0; i < 7; i++) {
-        const len   = WHEEL_R * (0.4 + Math.random() * 0.5);
-        const off   = (i + 1) * WHEEL_R * 0.25;
-        const yOff  = (Math.random() - 0.5) * WHEEL_R * 0.55;
-        const alpha = (1 - i / 7) * speed * 0.16;
-        ctx.strokeStyle = `rgba(0,194,255,${alpha})`;
-        ctx.lineWidth   = 0.8 + (7 - i) * 0.15;
+      if (speed < 0.15) return;
+      for (let i = 0; i < 10; i++) {
+        const len = WHEEL_R * (0.4 + Math.random() * 0.65);
+        const off = (i + 1) * WHEEL_R * 0.27;
+        const yOff = (Math.random() - 0.5) * WHEEL_R * 0.7;
+        const a = (1 - i / 10) * speed * 0.18;
+        ctx.strokeStyle = i < 4
+          ? C_WHITE + a + ')'
+          : C_CYAN2 + a + ')';
+        ctx.lineWidth = 0.7 + (10 - i) * 0.10;
         ctx.beginPath();
-        ctx.moveTo(wx - off,       WHEEL_CY + yOff);
-        ctx.lineTo(wx - off - len, WHEEL_CY + yOff);
+        ctx.moveTo(wx - off, GROUND_Y + yOff);
+        ctx.lineTo(wx - off - len, GROUND_Y + yOff);
         ctx.stroke();
       }
     };
 
-    // ── Main render loop ──────────────────────────────────────────────────────
+    // ── Scan sweep ───────────────────────────────────────────────────────────
+    const drawScanSweep = (prog: number) => {
+      if (prog < 0.04 || prog > 0.42) return;
+      const t = remap(prog, 0.04, 0.42, 0, 1);
+      const y = t * H;
+      const sg = ctx.createLinearGradient(0, y - 70, 0, y + 5);
+      sg.addColorStop(0, 'transparent');
+      sg.addColorStop(0.75, C_CYAN2 + '0.03)');
+      sg.addColorStop(1, C_CYAN2 + '0.14)');
+      ctx.fillStyle = sg;
+      ctx.fillRect(0, y - 70, W, 75);
+    };
+
+    // ── Stars ─────────────────────────────────────────────────────────────────
+    const STARS = Array.from({ length: 90 }, () => ({
+      x: Math.random() * W, y: Math.random() * H * 0.44,
+      r: Math.random() * 0.85 + 0.1, a: Math.random() * 0.2 + 0.04,
+    }));
+
+    // ── MAIN LOOP ─────────────────────────────────────────────────────────────
     let animId: number;
     let t0: number | null = null;
 
     const frame = (now: number) => {
       if (!t0) t0 = now;
-      const progress = Math.min((now - t0) / TOTAL_MS, 1);
+      const prog = Math.min((now - t0) / TOTAL_MS, 1);
 
       ctx.clearRect(0, 0, W, H);
 
       // Stars
+      const starA = clamp(remap(prog, 0, 0.14, 0, 1), 0, 1);
       STARS.forEach(s => {
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(0,194,255,${s.a})`;
+        ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fillStyle = C_CYAN2 + (s.a * starA) + ')';
         ctx.fill();
       });
 
-      // ── Derive wheel state ──────────────────────────────────────────────
-      let wx: number, wy: number, rot: number, wAlpha = 1, glow = 0, speed = 0;
+      drawScanSweep(prog);
 
-      if (progress < PHASE_INTRO) {
-        // Wheel fades/drops in from top before rolling
-        const t  = remap(progress, 0, PHASE_INTRO, 0, 1);
-        const et = easeOut3(t);
-        wx       = START_X;
-        wy       = WHEEL_CY - (1 - et) * WHEEL_R * 2;
-        rot      = 0;
-        wAlpha   = et;
-        glow     = 0;
+      const gridA = clamp(remap(prog, 0, PH_GRID, 0, 1), 0, 1) *
+        clamp(remap(prog, 0.72, 0.94, 1, 0.28), 0, 1);
+      drawHexGrid(prog, gridA);
 
-      } else if (progress < PHASE_ROLL) {
-        // Rolling across the surface left → right
-        const t  = remap(progress, PHASE_INTRO, PHASE_ROLL, 0, 1);
-        const et = easeInOut(t);
-        wx       = START_X + TOTAL_DIST * et;
-        wy       = WHEEL_CY;
-        rot      = (wx - START_X) / WHEEL_R;
-        speed    = 1 - Math.abs(et - 0.5) * 0.4;   // fastest in middle
-        glow     = clamp(remap(t, 0.6, 1.0, 0, 1), 0, 1);
-        spawnDust(wx);
+      // ── Derive wheel state ────────────────────────────────────────────────
+      let wx = START_X, wy = GROUND_Y;
+      let solidA = 0, glow = 0, blur = 0, speed = 0, rot = 0;
+
+      if (prog < PH_GRID) {
+        solidA = 0;
+
+      } else if (prog < PH_MAT) {
+        // Wireframe drops in
+        const t = remap(prog, PH_GRID, PH_MAT, 0, 1);
+        const et = easeOutCubic(t);
+        wx = START_X; wy = GROUND_Y - (1 - et) * WHEEL_R * 2.8;
+        const wfA = et * clamp(remap(prog, PH_MAT * 0.85, PH_MAT, 1, 0), 0, 1);
+        drawAnnotations(START_X, GROUND_Y, et * 0.75, 0);
+        drawWireframe(wx, wy, wfA);
+        glow = et * 0.22; solidA = 0;
+
+      } else if (prog < PH_SPIN) {
+        // Solidifies & spins up
+        const t = remap(prog, PH_MAT, PH_SPIN, 0, 1);
+        wx = START_X; wy = GROUND_Y;
+        rot = easeInOutQuart(t) * Math.PI * 14;
+        solidA = 1;
+        glow = t * 0.5;
+        blur = clamp(remap(t, 0.3, 0.72, 0, 1), 0, 1) *
+          clamp(remap(t, 0.72, 1, 1, 0), 0, 1);
+        drawAnnotations(wx, wy, (1 - t) * 0.65, rot);
+
+      } else if (prog < PH_ROLL) {
+        // Roll across surface, stamp ISA
+        const t = remap(prog, PH_SPIN, PH_ROLL, 0, 1);
+        const et = t < 0.08
+          ? easeInOutQuart(t / 0.08) * 0.04
+          : 0.04 + easeInOutQuart((t - 0.08) / 0.92) * 0.96;
+        wx = START_X + TOTAL_DIST * et;
+        wy = GROUND_Y;
+        rot = (wx - START_X) / WHEEL_R;
+        speed = clamp(1 - Math.abs(et - 0.5) * 1.3, 0, 1);
+        solidA = 1;
+        glow = 0.65;
+        blur = 0;
+        spawnParticles(wx);
+
+      } else if (prog < PH_SETL) {
+        // Overshoot settle
+        const t = remap(prog, PH_ROLL, PH_SETL, 0, 1);
+        const over = Math.sin(t * Math.PI * 2.6) * (1 - t) * 11;
+        wx = END_X + over; wy = GROUND_Y;
+        rot = (END_X - START_X) / WHEEL_R;
+        solidA = 1; glow = 1;
 
       } else {
-        // Settled / coast stop
-        const t  = remap(progress, PHASE_ROLL, 1, 0, 1);
-        const overshoot = Math.sin(t * Math.PI * 2.2) * (1 - t) * 8;
-        wx       = END_X + overshoot;
-        wy       = WHEEL_CY;
-        rot      = (END_X - START_X) / WHEEL_R;
-        glow     = 1;
-        speed    = 0;
+        // Idle glow pulse
+        const t = remap(prog, PH_SETL, 1, 0, 1);
+        wx = END_X; wy = GROUND_Y;
+        rot = (END_X - START_X) / WHEEL_R;
+        solidA = 1;
+        glow = 0.72 + Math.sin(t * Math.PI * 7) * 0.28;
       }
 
-      // Surface + reveal
-      drawSurface(wx);
-      // ISA reveals wherever wheel has passed (during roll phase)
-      const isaReveal = progress >= PHASE_INTRO ? wx : textLeft - WHEEL_R * 2;
-      const isaFadeIn = clamp(remap(progress, PHASE_INTRO, PHASE_INTRO + 0.05, 0, 1), 0, 1);
-      drawRevealedISA(isaReveal, isaFadeIn);
+      // Surface + ISA reveal
+      const revealX = prog >= PH_SPIN ? wx : -WHEEL_R * 2;
+      const isaFadeIn = clamp(remap(prog, PH_SPIN, PH_SPIN + 0.04, 0, 1), 0, 1);
+      drawSurface(revealX);
+      drawISA(revealX, isaFadeIn);
 
-      // Streaks, dust, wheel on top
-      drawStreaks(wx, speed);
+      if (prog >= PH_SPIN && prog < PH_SETL) drawStreaks(wx, speed);
       tickParticles();
-      drawWheel(wx, wy, rot, wAlpha, glow);
 
-      // Counter + bar
-      const pct = Math.round(progress * 100);
+      if (solidA > 0) drawWheel(wx, wy, rot, solidA, glow, blur);
+
+      // ── DOM telemetry ─────────────────────────────────────────────────────
+      const pct = Math.round(prog * 100);
       if (counterRef.current) counterRef.current.textContent = String(pct).padStart(3, '0');
       if (barFillRef.current) barFillRef.current.style.width = `${pct}%`;
 
-      if (progress < 1) animId = requestAnimationFrame(frame);
+      if (rpmRef.current) {
+        const rpm = Math.round(
+          clamp(remap(prog, PH_MAT, PH_SPIN, 0, 8400), 0, 8400) *
+          clamp(remap(prog, PH_ROLL, PH_SETL, 1, 0.08), 0, 1)
+        );
+        rpmRef.current.textContent = String(rpm).padStart(5, '0');
+      }
+      if (velRef.current) {
+        const vel = (
+          clamp(remap(prog, PH_SPIN, PH_ROLL, 0, 48.5), 0, 48.5) *
+          clamp(remap(prog, PH_ROLL, PH_SETL, 1, 0), 0, 1)
+        ).toFixed(1);
+        velRef.current.textContent = vel;
+      }
+      if (torqueRef.current) {
+        const trq = Math.round(
+          clamp(remap(prog, PH_MAT, PH_SPIN, 0, 318), 0, 318) *
+          clamp(remap(prog, PH_ROLL * 0.85, PH_SETL, 1, 0.18), 0, 1)
+        );
+        torqueRef.current.textContent = String(trq).padStart(3, '0');
+      }
+      if (statusRef.current) {
+        const idx = Math.floor(prog * STATUS.length);
+        statusRef.current.textContent = STATUS[Math.min(idx, STATUS.length - 1)];
+      }
+
+      if (prog < 1) animId = requestAnimationFrame(frame);
     };
 
-    // Wait for Orbitron font to load before first frame
     document.fonts.load(`900 ${FONT_SIZE}px 'Orbitron'`).then(() => {
-      // Re-render stamp canvas now that font is guaranteed loaded
-      sCtx.clearRect(0, 0, W, H);
-      sCtx.font         = `900 ${FONT_SIZE}px 'Orbitron', sans-serif`;
-      sCtx.textAlign    = 'center';
-      sCtx.textBaseline = 'middle';
-      sCtx.shadowColor  = CYAN;
-      sCtx.shadowBlur   = 32;
-      sCtx.fillStyle    = CYAN;
-      sCtx.fillText('ISA', W / 2, TEXT_Y);
-      sCtx.shadowBlur   = 10;
-      sCtx.fillStyle    = '#ffffff';
-      sCtx.fillText('ISA', W / 2, TEXT_Y);
-
+      renderStamp();
       animId = requestAnimationFrame(frame);
     });
 
     return () => cancelAnimationFrame(animId);
   }, [shouldRender]);
 
-  // ── Exit ──────────────────────────────────────────────────────────────────
+  // ── EXIT ──────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!loaded) return;
+    sessionStorage.setItem('isa-preloader-seen', '1');
     (async () => {
       const { default: gsap } = await import('gsap');
       const el = containerRef.current;
       if (!el) return;
       gsap.to(el, {
-        opacity: 0, y: -20, filter: 'blur(10px)',
-        duration: 0.75, ease: 'power2.inOut',
+        opacity: 0, y: -28, filter: 'blur(14px)',
+        duration: 0.9, ease: 'power3.inOut',
         onComplete() { el.style.display = 'none'; },
       });
     })();
   }, [loaded]);
 
+  // ── RENDER ────────────────────────────────────────────────────────────────
   return (
     <>
-      <style jsx>{`
-        :global(html.skip-preloader) .pl {
-          display: none !important;
+      <style jsx global>{`
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;500;600;700&display=swap');
+
+        html.skip-preloader .pl-root { display: none !important; }
+
+        .pl-root {
+          position: fixed; inset: 0;
+          background: #04060C;
+          z-index: 9999; overflow: hidden; cursor: wait;
+          font-family: 'Share Tech Mono', monospace;
         }
-        .pl {
-          position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-          background: #020810; z-index: 9999;
-          overflow: hidden; cursor: wait;
-        }
-        .pl::before {
-          content: ''; position: absolute; inset: 0;
+
+        /* Animated scanlines */
+        .pl-root::before {
+          content: ''; position: absolute; inset: 0; z-index: 20;
           background: repeating-linear-gradient(
-            0deg, transparent, transparent 3px,
-            rgba(0,194,255,0.009) 3px, rgba(0,194,255,0.009) 4px
+            0deg, transparent, transparent 2px,
+            rgba(0,200,255,0.007) 2px, rgba(0,200,255,0.007) 3px
           );
-          pointer-events: none; z-index: 1;
+          pointer-events: none;
+          animation: pl-scan 6s linear infinite;
         }
-        .pl canvas { position: absolute; inset: 0; }
+        @keyframes pl-scan {
+          from { background-position: 0 0; }
+          to   { background-position: 0 96px; }
+        }
 
-        /* Corner brackets */
-        .plc {
-          position: absolute; width: 26px; height: 26px;
-          pointer-events: none; z-index: 2;
+        /* Vignette */
+        .pl-root::after {
+          content: ''; position: absolute; inset: 0; z-index: 19;
+          background: radial-gradient(ellipse 76% 66% at 50% 50%, transparent 32%, rgba(4,6,12,0.68) 100%);
+          pointer-events: none;
         }
-        .plc::before, .plc::after {
-          content: ''; position: absolute;
-          background: rgba(0,194,255,0.4);
-        }
-        .plc::before { width: 2px; height: 100%; top: 0; }
-        .plc::after  { width: 100%; height: 2px; top: 0; }
-        .plc-tl { top: 22px; left: 22px; }
-        .plc-tr { top: 22px; right: 22px; transform: scaleX(-1); }
-        .plc-bl { bottom: 22px; left: 22px; transform: scaleY(-1); }
-        .plc-br { bottom: 22px; right: 22px; transform: scale(-1,-1); }
 
-        /* Side labels */
+        .pl-canvas { position: absolute; inset: 0; z-index: 1; }
+
+        /* ── Corner brackets ── */
+        .pl-corner {
+          position: absolute; width: 36px; height: 36px;
+          pointer-events: none; z-index: 25;
+          animation: pl-bracket 3.4s ease-in-out infinite;
+        }
+        .pl-corner::before, .pl-corner::after {
+          content: ''; position: absolute; background: rgba(0,200,255,0.48);
+        }
+        .pl-corner::before { width: 1.5px; height: 100%; top: 0; }
+        .pl-corner::after  { width: 100%; height: 1.5px; top: 0; }
+        .pl-corner--tl { top: 22px; left: 22px; }
+        .pl-corner--tr { top: 22px; right: 22px; transform: scaleX(-1); }
+        .pl-corner--bl { bottom: 22px; left: 22px; transform: scaleY(-1); }
+        .pl-corner--br { bottom: 22px; right: 22px; transform: scale(-1,-1); }
+        @keyframes pl-bracket { 0%,100% { opacity:.5; } 50% { opacity:1; } }
+
+        /* ── Top bar ── */
+        .pl-topbar {
+          position: absolute; top: 20px; left: 72px; right: 72px;
+          display: flex; justify-content: space-between; align-items: center;
+          z-index: 25;
+          animation: pl-fade-down 0.7s 0.15s ease-out both;
+        }
+        @keyframes pl-fade-down {
+          from { opacity:0; transform: translateY(-10px); }
+          to   { opacity:1; transform: translateY(0); }
+        }
+        .pl-brand {
+          font-family: 'Rajdhani', sans-serif;
+          font-size: 11px; font-weight: 600;
+          letter-spacing: 0.38em; text-transform: uppercase;
+          color: rgba(0,200,255,0.38);
+        }
+        .pl-brand b { color: rgba(0,200,255,0.82); font-weight: 700; }
+        .pl-sysid   { font-size: 8px; letter-spacing: 0.18em; color: rgba(0,200,255,0.18); }
+
+        /* ── Telemetry panels ── */
+        .pl-telem {
+          position: absolute; top: 66px;
+          display: flex; flex-direction: column; gap: 12px;
+          z-index: 25;
+          animation: pl-fade-left 0.6s 0.35s ease-out both;
+        }
+        .pl-telem--l { left: 26px; }
+        .pl-telem--r { right: 26px; align-items: flex-end; animation-name: pl-fade-right; }
+        @keyframes pl-fade-left  { from { opacity:0; transform: translateX(-14px); } to { opacity:1; transform:none; } }
+        @keyframes pl-fade-right { from { opacity:0; transform: translateX( 14px); } to { opacity:1; transform:none; } }
+
+        .pl-metric         { display: flex; flex-direction: column; gap: 3px; }
+        .pl-metric__label  { font-size: 7px; letter-spacing: 0.26em; text-transform: uppercase; color: rgba(0,200,255,0.2); }
+        .pl-metric__val    {
+          font-family: 'Orbitron', sans-serif;
+          font-size: 17px; font-weight: 700;
+          color: rgba(0,200,255,0.76); letter-spacing: 0.04em;
+          text-shadow: 0 0 22px rgba(0,200,255,0.42);
+        }
+        .pl-metric__unit   { font-size: 7px; color: rgba(0,200,255,0.28); letter-spacing: 0.14em; margin-left: 2px; }
+        .pl-metric__status {
+          font-family: 'Orbitron', sans-serif;
+          font-size: 8.5px; font-weight: 600;
+          color: rgba(0,200,255,0.76); letter-spacing: 0.06em;
+          text-shadow: 0 0 14px rgba(0,200,255,0.45);
+          animation: pl-blink 1.4s step-end infinite;
+        }
+        @keyframes pl-blink { 0%,100% { opacity:1; } 50% { opacity:.45; } }
+        .pl-divider { width: 44px; height: 1px; background: rgba(0,200,255,0.09); }
+
+        /* ── Side labels ── */
         .pl-side {
           position: absolute; top: 50%;
-          font-family: 'Share Tech Mono', monospace;
-          font-size: 8px; letter-spacing: 0.22em; text-transform: uppercase;
-          color: rgba(0,194,255,0.16); writing-mode: vertical-rl;
-          pointer-events: none; z-index: 2;
+          font-size: 7px; letter-spacing: 0.3em; text-transform: uppercase;
+          color: rgba(0,200,255,0.1); writing-mode: vertical-rl;
+          pointer-events: none; z-index: 25;
         }
-        .pl-side-l { left: 24px; transform: translateY(-50%) rotate(180deg); }
-        .pl-side-r { right: 24px; transform: translateY(-50%); }
+        .pl-side--l { left: 14px; transform: translateY(-50%) rotate(180deg); }
+        .pl-side--r { right: 14px; transform: translateY(-50%); }
 
-        /* Footer */
+        /* ── Footer ── */
         .pl-footer {
-          position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%);
-          width: min(360px, 78vw); display: flex; flex-direction: column;
-          gap: 9px; z-index: 2;
+          position: absolute; bottom: 30px;
+          left: 50%; transform: translateX(-50%);
+          width: min(420px, 82vw);
+          display: flex; flex-direction: column; gap: 10px;
+          z-index: 25;
+          animation: pl-fade-up 0.7s 0.25s ease-out both;
         }
-        .pl-meta { display: flex; justify-content: space-between; align-items: baseline; }
-        .pl-label {
-          font-family: 'Share Tech Mono', monospace;
-          font-size: 9px; letter-spacing: 0.24em; text-transform: uppercase;
-          color: rgba(0,194,255,0.26);
+        @keyframes pl-fade-up {
+          from { opacity:0; transform: translateX(-50%) translateY(12px); }
+          to   { opacity:1; transform: translateX(-50%) translateY(0); }
         }
+        .pl-footer__row { display: flex; justify-content: space-between; align-items: center; }
+        .pl-init-label  {
+          font-size: 7.5px; letter-spacing: 0.28em; text-transform: uppercase;
+          color: rgba(0,200,255,0.22);
+          display: flex; align-items: center; gap: 7px;
+        }
+        .pl-init-label::before {
+          content: ''; width: 5px; height: 5px; border-radius: 50%;
+          background: rgba(0,200,255,0.68);
+          animation: pl-dot 1.3s ease-in-out infinite;
+        }
+        @keyframes pl-dot { 0%,100% { opacity:.28; transform:scale(.7); } 50% { opacity:1; transform:scale(1.2); } }
+
         .pl-counter {
           font-family: 'Orbitron', sans-serif;
           font-size: 12px; font-weight: 900;
-          color: #00C2FF; letter-spacing: 0.06em;
+          color: #00C8FF; letter-spacing: 0.07em;
+          text-shadow: 0 0 18px rgba(0,200,255,0.7), 0 0 40px rgba(0,200,255,0.2);
         }
+        .pl-counter::after { content: '%'; font-size: 8px; margin-left: 1px; opacity: .5; }
+
         .pl-track {
-          width: 100%; height: 2px;
-          background: rgba(0,194,255,0.07); position: relative;
+          width: 100%; height: 1px;
+          background: rgba(0,200,255,0.08); position: relative;
+        }
+        .pl-track::before {
+          content: ''; position: absolute; inset: 0;
+          background: repeating-linear-gradient(90deg,
+            rgba(0,200,255,0.04) 0, rgba(0,200,255,0.04) 1px,
+            transparent 1px, transparent 14px);
         }
         .pl-fill {
           height: 100%; width: 0%;
-          background: linear-gradient(90deg, rgba(0,194,255,0.1), #00C2FF);
-          box-shadow: 0 0 10px #00C2FF, 0 0 22px rgba(0,194,255,0.22);
-          position: relative; transition: width 0.04s linear;
+          background: linear-gradient(90deg, rgba(0,200,255,0.08), #00C8FF);
+          box-shadow: 0 0 10px rgba(0,200,255,0.88), 0 0 28px rgba(0,200,255,0.28);
+          transition: width 0.04s linear; position: relative;
         }
         .pl-fill::after {
           content: ''; position: absolute;
-          right: -2px; top: 50%; transform: translateY(-50%);
-          width: 5px; height: 5px; border-radius: 50%;
+          right: -4px; top: 50%; transform: translateY(-50%);
+          width: 7px; height: 7px; border-radius: 50%;
           background: #fff;
-          box-shadow: 0 0 7px #00C2FF, 0 0 16px #00C2FF;
+          box-shadow: 0 0 8px #00C8FF, 0 0 22px #00C8FF, 0 0 44px rgba(0,200,255,0.3);
         }
+        .pl-ticks { display: flex; justify-content: space-between; margin-top: 5px; }
+        .pl-tick  { width: 1px; height: 3px; background: rgba(0,200,255,0.13); }
+        .pl-tick:nth-child(5n+1) { height: 5px; background: rgba(0,200,255,0.27); }
       `}</style>
 
       {shouldRender && (
-        <div className="pl fixed inset-0 w-screen h-screen bg-[#020810] z-[9999] overflow-hidden cursor-wait" ref={containerRef}>
-          <canvas ref={canvasRef} />
+        <div className="pl-root" ref={containerRef}>
+          <canvas className="pl-canvas" ref={canvasRef} />
 
-            <div className="plc plc-tl" />
-            <div className="plc plc-tr" />
-            <div className="plc plc-bl" />
-            <div className="plc plc-br" />
+          <div className="pl-corner pl-corner--tl" />
+          <div className="pl-corner pl-corner--tr" />
+          <div className="pl-corner pl-corner--bl" />
+          <div className="pl-corner pl-corner--br" />
 
-            <span className="pl-side pl-side-l">Rolling · Surface</span>
-            <span className="pl-side pl-side-r">Indian Skating Academy · Nagpur</span>
+          <div className="pl-topbar">
+            <div className="pl-brand">Indian Skating Academy · <b>ISA</b></div>
+            <div className="pl-sysid">SYS_ID: ISA-NGP-2025 ◆ v4.2.1</div>
+          </div>
 
-            <div className="pl-footer">
-              <div className="pl-meta">
-                <span className="pl-label">Initializing</span>
-                <span className="pl-counter" ref={counterRef}>000</span>
-              </div>
-              <div className="pl-track">
-                <div className="pl-fill" ref={barFillRef} />
+          <div className="pl-telem pl-telem--l">
+            <div className="pl-metric">
+              <div className="pl-metric__label">Wheel RPM</div>
+              <div className="pl-metric__val">
+                <span ref={rpmRef}>00000</span>
+                <span className="pl-metric__unit">rpm</span>
               </div>
             </div>
+            <div className="pl-divider" />
+            <div className="pl-metric">
+              <div className="pl-metric__label">Surface Vel</div>
+              <div className="pl-metric__val">
+                <span ref={velRef}>00.0</span>
+                <span className="pl-metric__unit">m/s</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="pl-telem pl-telem--r">
+            <div className="pl-metric" style={{ alignItems: 'flex-end' }}>
+              <div className="pl-metric__label">Torque</div>
+              <div className="pl-metric__val">
+                <span ref={torqueRef}>000</span>
+                <span className="pl-metric__unit">N·m</span>
+              </div>
+            </div>
+            <div className="pl-divider" />
+            <div className="pl-metric" style={{ alignItems: 'flex-end' }}>
+              <div className="pl-metric__label">Status</div>
+              <span className="pl-metric__status" ref={statusRef}>GRID.INIT</span>
+            </div>
+          </div>
+
+          <span className="pl-side pl-side--l">System Boot · Precision Rolling · Surface Stamp</span>
+          <span className="pl-side pl-side--r">Indian Skating Academy · Nagpur · ISA-NGP-001</span>
+
+          <div className="pl-footer">
+            <div className="pl-footer__row">
+              <span className="pl-init-label">Initializing surface systems</span>
+              <span className="pl-counter" ref={counterRef}>000</span>
+            </div>
+            <div className="pl-track">
+              <div className="pl-fill" ref={barFillRef} />
+            </div>
+            <div className="pl-ticks">
+              {Array.from({ length: 22 }, (_, i) => <div key={i} className="pl-tick" />)}
+            </div>
+          </div>
         </div>
       )}
     </>

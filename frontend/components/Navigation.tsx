@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
-import ThemeToggle from './ThemeToggle';
+import Logo from './Logo';
 
 export default function Navigation() {
   const pathname = usePathname();
@@ -54,8 +54,21 @@ export default function Navigation() {
   return (
     <>
       <nav className={`nav${scrolled ? ' nav--scrolled' : ''}${menuOpen ? ' nav--menu-open' : ''}`}>
-        <Link href="/" className="nav-logo" data-cursor-hover>
-          ISA
+        <Link 
+          href="/" 
+          className="nav-logo" 
+          data-cursor-hover
+          style={{ 
+            display: 'inline-flex', 
+            alignItems: 'center', 
+            textShadow: 'none', 
+            transform: 'none',
+            fontSize: 'inherit',
+            fontWeight: 'inherit',
+            letterSpacing: 'inherit'
+          }}
+        >
+          <Logo variant="navbar" />
         </Link>
 
         {/* Desktop links */}
@@ -65,7 +78,6 @@ export default function Navigation() {
               {link.label}
             </Link>
           ))}
-          <ThemeToggle />
         </div>
 
         {/* Mobile hamburger button */}
@@ -99,7 +111,6 @@ export default function Navigation() {
             </Link>
           ))}
           <div className="nav-mobile-footer">
-            <ThemeToggle />
           </div>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, Syncopate, Barlow, JetBrains_Mono } from "next/font/google";
+import { Space_Grotesk, Montserrat, JetBrains_Mono } from "next/font/google";
 import "../styles/globals.css";
 import Providers from "@/components/Providers";
 import ScrollToTop from "@/components/ScrollToTop";
@@ -10,31 +10,31 @@ import CustomCursor from "@/components/CustomCursor";
 import ClickSpark from "@/components/ClickSpark";
 import Particles from "@/components/Particles";
 
-// Display / headings — bold, editorial, high-impact
-const syncopate = Syncopate({
-  subsets: ["latin"],
-  variable: "--font-display",
-  weight: ["400", "700"],
-  display: "swap",
-});
-
-// Wordmark / hero title — geometric, modern
+// Display headings — sharp, geometric, modern technical style
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
-  variable: "--font-wordmark",
+  variable: "--font-display",
   weight: ["300", "400", "500", "600", "700"],
   display: "swap",
 });
 
-// Body text — clean, highly legible
-const barlow = Barlow({
+// Wordmark fallback
+const spaceGroteskWordmark = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-wordmark",
+  weight: ["400", "700"],
+  display: "swap",
+});
+
+// Body text — bold, premium, highly readable sports sans-serif
+const montserrat = Montserrat({
   subsets: ["latin"],
   variable: "--font-body",
   weight: ["300", "400", "500", "600", "700"],
   display: "swap",
 });
 
-// Monospace — tech labels, specs, code
+// Monospace — technical labels and data
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
@@ -64,11 +64,7 @@ export const metadata: Metadata = {
 const themeScript = `
 (function() {
   try {
-    var t = localStorage.getItem('isa-theme');
-    if (t !== 'light' && t !== 'dark') {
-      t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    }
-    document.documentElement.setAttribute('data-theme', t);
+    document.documentElement.setAttribute('data-theme', 'light');
   } catch (e) {
     document.documentElement.setAttribute('data-theme', 'light');
   }
@@ -83,7 +79,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${syncopate.variable} ${spaceGrotesk.variable} ${barlow.variable} ${jetbrainsMono.variable}`}
+      className={`${spaceGrotesk.variable} ${spaceGroteskWordmark.variable} ${montserrat.variable} ${jetbrainsMono.variable}`}
       suppressHydrationWarning
     >
       <head>

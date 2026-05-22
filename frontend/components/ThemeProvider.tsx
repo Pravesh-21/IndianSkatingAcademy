@@ -25,7 +25,7 @@ function readStoredTheme(): Theme {
   if (typeof window === 'undefined') return 'light';
   const stored = localStorage.getItem(STORAGE_KEY);
   if (stored === 'light' || stored === 'dark') return stored;
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  return 'light';
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
@@ -33,41 +33,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const initial = readStoredTheme();
-    setThemeState(initial);
-    document.documentElement.setAttribute('data-theme', initial);
+    document.documentElement.setAttribute('data-theme', 'light');
     setMounted(true);
   }, []);
 
-  const applyTheme = useCallback((next: Theme) => {
-    document.documentElement.classList.add('theme-transitioning');
-    document.documentElement.setAttribute('data-theme', next);
-    localStorage.setItem(STORAGE_KEY, next);
-    window.dispatchEvent(new CustomEvent('isa-theme-change', { detail: next }));
-    window.setTimeout(() => {
-      document.documentElement.classList.remove('theme-transitioning');
-    }, 520);
-  }, []);
-
-  const setTheme = useCallback(
-    (next: Theme) => {
-      setThemeState(next);
-      applyTheme(next);
-    },
-    [applyTheme]
-  );
-
-  const toggleTheme = useCallback(() => {
-    setThemeState((prev) => {
-      const next: Theme = prev === 'dark' ? 'light' : 'dark';
-      applyTheme(next);
-      return next;
-    });
-  }, [applyTheme]);
+  const setTheme = useCallback((next: Theme) => {}, []);
+  const toggleTheme = useCallback(() => {}, []);
 
   const value = useMemo(
-    () => ({ theme: mounted ? theme : 'light', setTheme, toggleTheme }),
-    [theme, mounted, setTheme, toggleTheme]
+    () => ({ theme: 'light' as Theme, setTheme, toggleTheme }),
+    [setTheme, toggleTheme]
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

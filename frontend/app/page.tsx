@@ -6,15 +6,21 @@ import gsap from 'gsap';
 import { useGSAPScroll } from '@/hooks/useGSAPScroll';
 import { programs, coaches } from '@/lib/data';
 import Link from 'next/link';
-import BorderGlow from '@/components/BorderGlow';
 import { AnimatePresence, motion } from 'framer-motion';
 
 export default function Home() {
-  const [loaded, setLoaded] = useState(false);
+  const [loaded, setLoaded] = useState(true);
   const [selectedProgram, setSelectedProgram] = useState<any>(null);
   const containerRef = useGSAPScroll();
 
   useEffect(() => {
+    const hasSeen = sessionStorage.getItem('isa-preloader-seen');
+    const showPreloader = !hasSeen;
+
+    if (showPreloader) {
+      setLoaded(false);
+    }
+
     // Listen for hard refresh keyboard shortcuts to clear the seen flag
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'r') {
@@ -23,15 +29,13 @@ export default function Home() {
     };
     window.addEventListener('keydown', handleKeyDown);
 
-    const showPreloader = true;
-    
     const animateTagline = () => {
       const taglineEl = document.querySelector('.hero-tagline');
       if (!taglineEl) return;
-      
+
       const words = taglineEl.textContent?.split(' ') || [];
       taglineEl.innerHTML = words.map(word => `<span class="tagline-word">${word}</span>`).join(' ');
-      
+
       const wordSpans = taglineEl.querySelectorAll('.tagline-word');
       gsap.set(wordSpans, { opacity: 0 });
       gsap.to(wordSpans, {
@@ -44,7 +48,6 @@ export default function Home() {
     };
 
     if (!showPreloader) {
-      setLoaded(true);
       animateTagline();
     } else {
       animateTagline();
@@ -64,7 +67,7 @@ export default function Home() {
   return (
     <main ref={containerRef as any}>
       <Preloader loaded={loaded} />
-      
+
       <div className="static-background">
         <div className="gradient-glow"></div>
       </div>
@@ -113,12 +116,12 @@ export default function Home() {
             <h2 className="section-heading reveal" style={{ fontSize: 'clamp(40px, 5vw, 72px)', marginBottom: '16px' }}>
               Master the Art of <span className="accent">Velocity</span>
             </h2>
-            <p className="section-subheading reveal" style={{ 
-              fontFamily: 'var(--font-mono)', 
-              fontSize: '14px', 
-              color: 'var(--blue)', 
-              textTransform: 'uppercase', 
-              letterSpacing: '0.15em', 
+            <p className="section-subheading reveal" style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '14px',
+              color: 'var(--blue)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.15em',
               marginBottom: '32px',
               fontWeight: '600'
             }}>
@@ -128,33 +131,14 @@ export default function Home() {
               We don&apos;t just teach skating; we engineer champions. Indian Skating Academy is the country&apos;s premier institution dedicated to the absolute mastery of inline sports. From the precise mechanics of speed skating to the flawless execution of artistic freestyle, we provide an elite training ecosystem designed to push you beyond your limits. Whether you are stepping onto the rink for the first time or aiming for international podiums, our world-class coaching staff is committed to your journey of speed, agility, and grace.
             </p>
             <div className="hero-cta reveal" style={{ opacity: 1, transition: 'none', display: 'flex', justifyContent: 'center', gap: '24px', flexWrap: 'wrap' }}>
-              <BorderGlow
-                borderRadius={60}
-                glowColor="194 80 50"
-                backgroundColor="transparent"
-                glowRadius={30}
-                colors={['#00C2FF', '#22EE50', '#00C2FF']}
-                edgeSensitivity={20}
-              >
-                <Link href="/about" className="btn-glow" style={{ background: 'transparent', boxShadow: 'none', transform: 'none', border: 'none' }}>
-                  <span className="btn-glow-text">Discover Our Legacy</span>
-                  <span className="btn-glow-arrow">→</span>
-                </Link>
-              </BorderGlow>
+              <Link href="/about" className="btn-glow" data-cursor-hover>
+                <span className="btn-glow-text">Discover Our Legacy</span>
+                <span className="btn-glow-arrow">→</span>
+              </Link>
 
-              <BorderGlow
-                borderRadius={60}
-                glowColor="194 100 80"
-                backgroundColor="transparent"
-                glowRadius={40}
-                glowIntensity={2.0}
-                colors={['#00C2FF', '#ffffff', '#00C2FF']}
-                edgeSensitivity={30}
-              >
-                <Link href="/programs" className="btn-pill" style={{ background: 'transparent', border: 'none', transform: 'none', margin: 0 }}>
-                  Explore Disciplines
-                </Link>
-              </BorderGlow>
+              <Link href="/programs" className="btn-pill btn-pill--outline" data-cursor-hover>
+                Explore Disciplines
+              </Link>
             </div>
           </div>
         </section>
@@ -182,9 +166,9 @@ export default function Home() {
             {programs.slice(0, 4).map((prog, i) => {
               const coach = coaches.find(c => c.name === prog.coach);
               return (
-                <div 
-                  key={prog.name} 
-                  className="program-card reveal" 
+                <div
+                  key={prog.name}
+                  className="program-card reveal"
                   onClick={() => setSelectedProgram(prog)}
                   style={{ cursor: 'pointer' }}
                 >
@@ -230,14 +214,14 @@ export default function Home() {
 
       <AnimatePresence>
         {selectedProgram && (
-          <motion.div 
+          <motion.div
             className="program-overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setSelectedProgram(null)}
           >
-            <motion.div 
+            <motion.div
               className="program-expanded-card"
               initial={{ scale: 0.8, y: 20, opacity: 0 }}
               animate={{ scale: 1, y: 0, opacity: 1 }}
@@ -246,11 +230,11 @@ export default function Home() {
               onClick={(e) => e.stopPropagation()}
             >
               <button className="card-close" onClick={() => setSelectedProgram(null)}>×</button>
-              
+
               <div className="expanded-left">
-                <img 
-                  src={coaches.find(c => c.name === selectedProgram.coach)?.image} 
-                  alt={selectedProgram.coach} 
+                <img
+                  src={coaches.find(c => c.name === selectedProgram.coach)?.image}
+                  alt={selectedProgram.coach}
                   className="expanded-coach-img"
                 />
                 <div className="coach-overlay-info">
@@ -258,16 +242,16 @@ export default function Home() {
                   <p>{coaches.find(c => c.name === selectedProgram.coach)?.role}</p>
                 </div>
               </div>
-              
+
               <div className="expanded-right">
                 <div className="expanded-badge">{selectedProgram.ages}</div>
                 <h2 className="expanded-title">{selectedProgram.name}</h2>
                 <div className="expanded-divider" />
-                
+
                 <p className="expanded-bio">
                   {coaches.find(c => c.name === selectedProgram.coach)?.bio}
                 </p>
-                
+
                 <div className="expanded-meta-grid">
                   <div className="meta-item">
                     <span className="meta-label">Target Group</span>
@@ -278,7 +262,7 @@ export default function Home() {
                     <span className="meta-value">ISA Gold Level</span>
                   </div>
                 </div>
-                
+
                 <Link href="/join" className="btn-pill" style={{ marginTop: '32px', width: '100%', justifyContent: 'center' }}>
                   Register for Batch
                 </Link>

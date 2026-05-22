@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Logo from './Logo';
 
 export default function Footer() {
   const handleLinkClick = () => {
@@ -16,12 +17,22 @@ export default function Footer() {
       <div className="footer-container">
         {/* Footer Top: Brand and Newsletter */}
         <div className="footer-top">
-          <div className="footer-brand">
-            <Link href="/" className="footer-logo" onClick={handleLinkClick}>ISA</Link>
-            <p className="footer-tagline">
-              India's Premier Inline Skating Academy. <br />
-              Speed is the language. The rink is the page.
-            </p>
+          <div className="footer-brand" style={{ gap: '20px', display: 'flex', flexDirection: 'column' }}>
+            <Link 
+              href="/" 
+              onClick={handleLinkClick}
+              style={{ 
+                display: 'inline-block',
+                textShadow: 'none', 
+                transform: 'none',
+                fontSize: 'inherit',
+                fontWeight: 'inherit',
+                letterSpacing: 'inherit',
+                width: '100%'
+              }}
+            >
+              <Logo variant="footer" />
+            </Link>
             <div className="footer-socials">
               <a href="#" className="social-link" aria-label="Instagram">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
