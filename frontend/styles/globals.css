@@ -875,7 +875,13 @@ html[data-theme="light"] .hero::before {
 }
 
 .hero-tagline .tagline-word {
-  color: inherit;
+  background: linear-gradient(135deg, var(--blue-bright) 0%, var(--green) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  display: inline-block;
+  filter: drop-shadow(0 2px 8px rgba(0, 245, 160, 0.25));
 }
 
 .hero-cta {
