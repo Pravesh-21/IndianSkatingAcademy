@@ -5,6 +5,7 @@ import { initializeDatabase } from './services/db.js';
 import joinRouter from './routes/join.js';
 import adminRouter from './routes/admin.js';
 import inquiryRouter from './routes/inquiry.js';
+import membershipRouter from './routes/membership.js';
 
 const app = express();
 const PORT = process.env.PORT ?? 4000;
@@ -27,6 +28,7 @@ app.get('/health', (_req, res) => {
 app.use('/api/join', joinRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/inquiry', inquiryRouter);
+app.use('/api/membership', membershipRouter);
 
 // 404 handler
 app.use((_req, res) => {

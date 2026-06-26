@@ -4146,3 +4146,1257 @@ html[data-theme="light"] .nav-hamburger:hover {
     height: 56px;
   }
 }
+
+/* ==============================================
+   NAV LINK HIGHLIGHT (Admission CTA)
+   ============================================== */
+.nav-links a.nav-link-highlight {
+  color: var(--blue-bright);
+  padding: 6px 14px;
+  border: 1px solid rgba(0, 194, 255, 0.35);
+  border-radius: 100px;
+  background: rgba(0, 194, 255, 0.08);
+  transition: all 0.3s var(--ease-out-expo);
+}
+
+.nav-links a.nav-link-highlight:hover,
+.nav-links a.nav-link-highlight.active {
+  background: rgba(0, 194, 255, 0.18);
+  border-color: var(--blue);
+  box-shadow: 0 0 20px rgba(0, 194, 255, 0.25);
+}
+
+.nav-links a.nav-link-highlight::after {
+  display: none;
+}
+
+/* ==============================================
+   ADMISSION PAGE
+   ============================================== */
+.admission-section {
+  min-height: calc(100vh - 72px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: clamp(48px, 6vw, 96px) clamp(20px, 5vw, 80px);
+  gap: 48px;
+}
+
+.admission-header {
+  text-align: center;
+  max-width: 640px;
+}
+
+.admission-title {
+  font-family: var(--font-display);
+  font-size: clamp(36px, 5vw, 64px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--text-primary);
+  margin-bottom: 14px;
+}
+
+.admission-subtitle {
+  font-size: 16px;
+  color: var(--chrome);
+  line-height: 1.6;
+}
+
+/* Progress steps */
+.admission-progress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 32px;
+  flex-wrap: wrap;
+  position: relative;
+}
+
+.admission-step-dot {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 194, 255, 0.2);
+  background: var(--glass-bg);
+  color: var(--chrome);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  transition: all 0.4s var(--ease-out-expo);
+  position: relative;
+  z-index: 1;
+}
+
+.admission-step-dot.active {
+  border-color: var(--blue);
+  background: rgba(0, 194, 255, 0.12);
+  color: var(--blue-bright);
+  box-shadow: 0 0 16px rgba(0, 194, 255, 0.3);
+}
+
+.admission-step-dot.done {
+  border-color: var(--green);
+  background: rgba(34, 238, 80, 0.1);
+  color: var(--green);
+  box-shadow: 0 0 12px rgba(34, 238, 80, 0.2);
+}
+
+.admission-progress-labels {
+  display: flex;
+  gap: 30px;
+  position: absolute;
+  top: 46px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.admission-progress-labels span {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--chrome-dark);
+  opacity: 0.6;
+  transition: all 0.3s;
+}
+
+.admission-progress-labels span.active {
+  color: var(--blue);
+  opacity: 1;
+}
+
+/* Admission form container */
+.admission-form {
+  width: 100%;
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.admission-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group.full-span {
+  grid-column: 1 / -1;
+}
+
+.form-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--chrome);
+}
+
+.form-input-v2 {
+  width: 100%;
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  transition: all 0.3s var(--ease-out-expo);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.form-input-v2:focus {
+  border-color: var(--blue);
+  background: var(--glass-bg);
+  box-shadow: 0 0 0 3px rgba(0, 194, 255, 0.1), 0 0 20px rgba(0, 194, 255, 0.06);
+}
+
+.form-input-v2::placeholder {
+  color: var(--chrome-dark);
+  opacity: 0.6;
+}
+
+.form-input-v2 option {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 90px;
+}
+
+.form-hint {
+  font-size: 11px;
+  color: var(--chrome-dark);
+  opacity: 0.7;
+}
+
+/* Discipline cards */
+.discipline-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-top: 8px;
+}
+
+.discipline-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 12px;
+  border-radius: 16px;
+  border: 1.5px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--chrome);
+  transition: all 0.3s var(--ease-out-expo);
+  text-align: center;
+}
+
+.discipline-card:hover {
+  border-color: rgba(0, 194, 255, 0.3);
+  background: rgba(0, 194, 255, 0.04);
+  transform: translateY(-2px);
+}
+
+.discipline-card.selected {
+  border-color: var(--blue);
+  background: rgba(0, 194, 255, 0.1);
+  color: var(--blue-bright);
+  box-shadow: 0 0 24px rgba(0, 194, 255, 0.2);
+}
+
+.discipline-icon {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.discipline-name {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.discipline-desc {
+  font-size: 11px;
+  opacity: 0.7;
+  line-height: 1.4;
+}
+
+/* Admission errors and buttons */
+.admission-error {
+  color: #FF5C5C;
+  font-size: 13px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: rgba(255, 92, 92, 0.08);
+  border: 1px solid rgba(255, 92, 92, 0.2);
+}
+
+.admission-btn-next {
+  width: 100%;
+  padding: 16px 32px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, var(--blue), var(--blue-bright));
+  color: #ffffff;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  transition: all 0.35s var(--ease-out-expo);
+  box-shadow: 0 8px 24px rgba(0, 194, 255, 0.25);
+}
+
+.admission-btn-next:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 40px rgba(0, 194, 255, 0.4);
+  background: linear-gradient(135deg, var(--blue-bright), var(--blue));
+}
+
+.admission-btn-row {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.admission-btn-back {
+  padding: 16px 24px;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  color: var(--chrome);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s var(--ease-out-expo);
+  flex-shrink: 0;
+}
+
+.admission-btn-back:hover {
+  border-color: var(--blue);
+  color: var(--blue-bright);
+}
+
+.admission-btn-pay {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 18px 32px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: #ffffff;
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  transition: all 0.35s var(--ease-out-expo);
+  box-shadow: 0 8px 28px rgba(34, 197, 94, 0.3);
+}
+
+.admission-btn-pay:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 44px rgba(34, 197, 94, 0.45);
+  background: linear-gradient(135deg, #4ade80, #22c55e);
+}
+
+.admission-btn-pay:disabled {
+  opacity: 0.6;
+}
+
+.admission-btn-pay.loading {
+  background: linear-gradient(135deg, #4b5563, #374151);
+  box-shadow: none;
+}
+
+.admission-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+.admission-secure-note {
+  text-align: center;
+  font-size: 12px;
+  color: var(--chrome-dark);
+  opacity: 0.7;
+  margin-top: -8px;
+}
+
+/* Documents step */
+.admission-docs-intro {
+  padding: 16px 20px;
+  border-radius: 12px;
+  background: rgba(0, 194, 255, 0.04);
+  border: 1px solid rgba(0, 194, 255, 0.12);
+  color: var(--chrome);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.docs-checklist {
+  padding: 24px;
+  border-radius: 16px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.docs-checklist-title {
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--chrome);
+  margin-bottom: 16px;
+}
+
+.docs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.docs-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.docs-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+  width: 28px;
+  text-align: center;
+}
+
+/* Plan selection */
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.plan-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px 16px;
+  border-radius: 16px;
+  border: 1.5px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--text-primary);
+  transition: all 0.3s var(--ease-out-expo);
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+}
+
+.plan-card:hover {
+  border-color: rgba(0, 194, 255, 0.3);
+  transform: translateY(-3px);
+}
+
+.plan-card.selected {
+  border-color: var(--blue);
+  background: rgba(0, 194, 255, 0.08);
+  box-shadow: 0 0 28px rgba(0, 194, 255, 0.18);
+}
+
+.plan-card.popular {
+  border-color: rgba(0, 194, 255, 0.25);
+}
+
+.plan-badge {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 14px;
+  border-radius: 0 0 10px 10px;
+  background: linear-gradient(135deg, var(--blue), var(--blue-bright));
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.plan-duration {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--chrome);
+  margin-top: 12px;
+}
+
+.plan-price {
+  font-size: 28px;
+  font-weight: 800;
+  font-family: var(--font-display);
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.plan-per {
+  font-size: 11px;
+  color: var(--chrome-dark);
+  opacity: 0.8;
+}
+
+.plan-savings {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--green);
+  padding: 3px 10px;
+  border-radius: 100px;
+  background: rgba(34, 238, 80, 0.1);
+  border: 1px solid rgba(34, 238, 80, 0.2);
+}
+
+/* Order summary */
+.order-summary {
+  padding: 24px;
+  border-radius: 16px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.order-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+
+.order-label {
+  color: var(--chrome);
+  font-weight: 500;
+}
+
+.order-value {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.order-divider {
+  height: 1px;
+  background: var(--glass-border);
+  margin: 4px 0;
+}
+
+.order-total .order-label {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.order-total .order-value {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--blue-bright);
+  font-family: var(--font-display);
+}
+
+/* Admission success */
+.admission-success {
+  width: 100%;
+  max-width: 560px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 48px 32px;
+  border-radius: 24px;
+  border: 1px solid rgba(34, 238, 80, 0.25);
+  background: rgba(34, 238, 80, 0.04);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.admission-success-icon {
+  font-size: 56px;
+  animation: bounceIn 0.6s var(--ease-out-expo);
+}
+
+@keyframes bounceIn {
+  0% { transform: scale(0.5); opacity: 0; }
+  60% { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.admission-success-title {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.admission-success-sub {
+  color: var(--chrome);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.admission-success-expiry {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 32px;
+  border-radius: 12px;
+  background: rgba(34, 238, 80, 0.08);
+  border: 1px solid rgba(34, 238, 80, 0.2);
+}
+
+.admission-success-expiry-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--chrome);
+}
+
+.admission-success-expiry-date {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--green);
+  font-family: var(--font-display);
+}
+
+.admission-success-note {
+  font-size: 13px;
+  color: var(--chrome-dark);
+  line-height: 1.6;
+}
+
+.admission-link {
+  color: var(--blue);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Renewal hint — below admission section */
+.admission-renew-hint {
+  padding-bottom: clamp(32px, 5vw, 64px);
+  display: flex;
+  justify-content: center;
+}
+
+.admission-renew-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  border-radius: 100px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--chrome);
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.35s var(--ease-out-expo);
+  text-decoration: none;
+}
+
+.admission-renew-link:hover {
+  border-color: var(--blue);
+  color: var(--blue-bright);
+  background: rgba(0, 194, 255, 0.06);
+  box-shadow: 0 0 24px rgba(0, 194, 255, 0.12);
+  transform: translateY(-2px);
+}
+
+.admission-renew-icon {
+  font-size: 16px;
+  transition: transform 0.35s var(--ease-out-expo);
+}
+
+.admission-renew-link:hover .admission-renew-icon {
+  transform: rotate(180deg);
+}
+
+.admission-renew-arrow {
+  font-size: 15px;
+  transition: transform 0.3s var(--ease-out-expo);
+}
+
+.admission-renew-link:hover .admission-renew-arrow {
+  transform: translateX(4px);
+}
+
+/* ==============================================
+   MEMBERSHIP PORTAL PAGE
+   ============================================== */
+.membership-section {
+  min-height: calc(100vh - 72px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: clamp(48px, 6vw, 96px) clamp(20px, 5vw, 80px);
+  gap: 40px;
+}
+
+.membership-header {
+  text-align: center;
+  max-width: 600px;
+}
+
+.membership-title {
+  font-family: var(--font-display);
+  font-size: clamp(36px, 5vw, 64px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--text-primary);
+  margin-bottom: 14px;
+}
+
+.membership-subtitle {
+  font-size: 16px;
+  color: var(--chrome);
+  line-height: 1.6;
+}
+
+/* Phone lookup form */
+.membership-lookup-form {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.membership-lookup-input-wrap {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  border-radius: 14px;
+  border: 1.5px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  overflow: hidden;
+  transition: border-color 0.3s;
+}
+
+.membership-lookup-input-wrap:focus-within {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(0, 194, 255, 0.1);
+}
+
+.membership-lookup-prefix {
+  padding: 16px 12px 16px 20px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--chrome);
+  border-right: 1px solid var(--glass-border);
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.membership-lookup-input {
+  flex: 1;
+  padding: 16px 20px;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.membership-lookup-input::placeholder {
+  color: var(--chrome-dark);
+  opacity: 0.5;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.membership-lookup-btn {
+  width: 100%;
+  padding: 16px 32px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, var(--blue), var(--blue-bright));
+  color: #ffffff;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.35s var(--ease-out-expo);
+  box-shadow: 0 8px 24px rgba(0, 194, 255, 0.25);
+}
+
+.membership-lookup-btn:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 40px rgba(0, 194, 255, 0.4);
+}
+
+.membership-lookup-btn:disabled {
+  opacity: 0.6;
+}
+
+.membership-not-found {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  color: var(--chrome);
+  font-size: 14px;
+}
+
+.membership-error {
+  color: #FF5C5C;
+  font-size: 13px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: rgba(255, 92, 92, 0.08);
+  border: 1px solid rgba(255, 92, 92, 0.2);
+  width: 100%;
+}
+
+/* Member profile */
+.membership-profile {
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Status card */
+.membership-status-card {
+  border-radius: 24px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  transition: border-color 0.4s;
+}
+
+.membership-status-card.status-active {
+  border-color: rgba(34, 238, 80, 0.2);
+  box-shadow: 0 0 40px rgba(34, 238, 80, 0.06);
+}
+
+.membership-status-card.status-expired {
+  border-color: rgba(255, 92, 26, 0.2);
+  box-shadow: 0 0 40px rgba(255, 92, 26, 0.06);
+}
+
+.membership-status-card.status-suspended {
+  border-color: rgba(255, 59, 59, 0.2);
+  box-shadow: 0 0 40px rgba(255, 59, 59, 0.06);
+}
+
+.membership-status-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.membership-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), var(--blue-bright));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+  box-shadow: 0 0 24px rgba(0, 194, 255, 0.3);
+}
+
+.membership-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.membership-name {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.membership-phone-display {
+  font-size: 13px;
+  color: var(--chrome);
+  margin-bottom: 4px;
+  font-family: var(--font-mono);
+}
+
+.membership-discipline {
+  font-size: 13px;
+  color: var(--chrome-dark);
+}
+
+.membership-status-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.membership-status-icon {
+  font-size: 24px;
+}
+
+.membership-status-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* Dates row */
+.membership-dates {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 20px;
+  border-radius: 14px;
+  background: rgba(0, 194, 255, 0.04);
+  border: 1px solid rgba(0, 194, 255, 0.08);
+}
+
+.membership-date-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.membership-date-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--chrome-dark);
+  font-weight: 600;
+}
+
+.membership-date-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-family: var(--font-display);
+}
+
+.membership-date-divider {
+  width: 1px;
+  height: 40px;
+  background: var(--glass-border);
+}
+
+.membership-no-active {
+  text-align: center;
+  color: var(--chrome-dark);
+  font-size: 14px;
+}
+
+.membership-meta {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  font-size: 12px;
+  color: var(--chrome-dark);
+  opacity: 0.7;
+}
+
+/* Suspended card */
+.membership-suspended-card {
+  padding: 28px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 59, 59, 0.2);
+  background: rgba(255, 59, 59, 0.04);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.membership-suspended-icon {
+  font-size: 36px;
+}
+
+.membership-suspended-card h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.membership-suspended-card p {
+  font-size: 14px;
+  color: var(--chrome);
+  line-height: 1.6;
+  max-width: 400px;
+}
+
+.membership-readmit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 28px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--blue), var(--blue-bright));
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  transition: all 0.3s var(--ease-out-expo);
+  box-shadow: 0 6px 20px rgba(0, 194, 255, 0.3);
+  margin-top: 4px;
+}
+
+.membership-readmit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0, 194, 255, 0.4);
+}
+
+/* Renewal success */
+.membership-renew-success {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  border-radius: 14px;
+  border: 1px solid rgba(34, 238, 80, 0.25);
+  background: rgba(34, 238, 80, 0.06);
+  font-size: 14px;
+}
+
+.membership-renew-success > span {
+  font-size: 28px;
+}
+
+.membership-renew-success strong {
+  font-size: 15px;
+  color: var(--text-primary);
+}
+
+.membership-renew-success p {
+  color: var(--chrome);
+  margin-top: 4px;
+}
+
+.membership-renew-success strong + p strong {
+  color: var(--green);
+}
+
+/* Renewal section */
+.membership-renew-section {
+  padding: 28px;
+  border-radius: 20px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.membership-renew-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.membership-renew-note {
+  font-size: 13px;
+  color: var(--chrome);
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: rgba(0, 194, 255, 0.04);
+  border: 1px solid rgba(0, 194, 255, 0.1);
+  line-height: 1.5;
+}
+
+/* Renew plan cards */
+.renew-plans-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.renew-plan-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 8px;
+  border-radius: 12px;
+  border: 1.5px solid var(--glass-border);
+  background: var(--glass-bg);
+  color: var(--text-primary);
+  transition: all 0.3s var(--ease-out-expo);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.renew-plan-card:hover {
+  border-color: rgba(0, 194, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.renew-plan-card.selected {
+  border-color: var(--blue);
+  background: rgba(0, 194, 255, 0.1);
+  box-shadow: 0 0 20px rgba(0, 194, 255, 0.15);
+}
+
+.renew-plan-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--chrome);
+}
+
+.renew-plan-price {
+  font-size: 18px;
+  font-weight: 800;
+  font-family: var(--font-display);
+  color: var(--text-primary);
+}
+
+/* Renewal button */
+.membership-renew-btn {
+  width: 100%;
+  padding: 18px 32px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: #ffffff;
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.35s var(--ease-out-expo);
+  box-shadow: 0 8px 28px rgba(34, 197, 94, 0.3);
+}
+
+.membership-renew-btn:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 44px rgba(34, 197, 94, 0.45);
+}
+
+.membership-renew-btn:disabled {
+  opacity: 0.6;
+}
+
+.membership-renew-btn.loading {
+  background: linear-gradient(135deg, #4b5563, #374151);
+  box-shadow: none;
+}
+
+/* Look up again */
+.membership-lookup-again {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  color: var(--chrome);
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.3s var(--ease-out-expo);
+  align-self: center;
+}
+
+.membership-lookup-again:hover {
+  border-color: var(--blue);
+  color: var(--blue-bright);
+}
+
+/* ==============================================
+   RESPONSIVE — Admission & Membership
+   ============================================== */
+@media (max-width: 768px) {
+  .admission-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .discipline-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .plans-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .renew-plans-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .admission-progress-labels {
+    display: none;
+  }
+
+  .membership-status-top {
+    flex-wrap: wrap;
+  }
+
+  .membership-dates {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .membership-date-divider {
+    width: 80%;
+    height: 1px;
+  }
+
+  .membership-meta {
+    flex-direction: column;
+    gap: 4px;
+    align-items: center;
+  }
+
+  .admission-btn-row {
+    flex-direction: column-reverse;
+  }
+
+  .admission-btn-back,
+  .admission-btn-pay {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .discipline-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .plans-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .membership-status-card {
+    padding: 20px 16px;
+  }
+}

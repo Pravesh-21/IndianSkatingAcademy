@@ -48,7 +48,8 @@ export default function Navigation() {
     { href: '/gallery', label: 'Gallery' },
     { href: '/programs', label: 'Programs' },
     { href: '/locations', label: 'Locations' },
-    { href: '/join', label: 'Join' },
+    { href: '/join', label: 'Enquiry' },
+    { href: '/admission', label: 'Admission', highlight: true },
   ];
 
   return (
@@ -74,7 +75,12 @@ export default function Navigation() {
         {/* Desktop links */}
         <div className="nav-links">
           {navLinks.map((link) => (
-            <Link key={link.href} href={link.href} className={linkClass(link.href)} data-cursor-hover>
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`${linkClass(link.href)}${(link as any).highlight ? ' nav-link-highlight' : ''}`}
+              data-cursor-hover
+            >
               {link.label}
             </Link>
           ))}

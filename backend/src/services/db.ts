@@ -43,9 +43,95 @@ export async function initializeDatabase() {
         submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `;
-    console.log('[Database] Tables "event_registrations" and "inquiries" ensured');
+
+    // Members table — stores admission details per person
+    await sql`
+      CREATE TABLE IF NOT EXISTS members (
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        phone TEXT UNIQUE NOT NULL,
+        dob DATE NOT NULL,
+        address TEXT NOT NULL,
+        discipline TEXT NOT NULL,
+        aadhar_number TEXT,
+        guardian_name TEXT,
+        blood_group TEXT,
+        emergency_contact TEXT,
+        status TEXT NOT NULL DEFAULT 'pending',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    // Memberships table — one row per payment/renewal
+    await sql`
+      CREATE TABLE IF NOT EXISTS memberships (
+        id SERIAL PRIMARY KEY,
+        member_id INT NOT NULL REFERENCES members(id) ON DELETE CASCADE,
+        plan_months INT NOT NULL,
+        amount_paise INT NOT NULL,
+        razorpay_order_id TEXT,
+        razorpay_payment_id TEXT,
+        razorpay_signature TEXT,
+        start_date DATE NOT NULL,
+        expiry_date DATE NOT NULL,
+        status TEXT NOT NULL DEFAULT 'pending',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    console.log('[Database] All tables ensured (event_registrations, inquiries, members, memberships)');
   } catch (error) {
-    console.error('[Database] Error ensuring table:', error);
+    console.error('[Database] Error ensuring tables:', error);
+  }
+}
+
+/**
+ * Mark members as suspended if their most-recent membership expired
+ * more than 2 months ago. Called on every status check and via cron.
+ */
+export async function checkAndSuspendExpiredMembers() {
+  try {
+    // Find members whose latest membership is older than 2 months
+    await sql`
+      UPDATE members
+      SET status = 'suspended', updated_at = NOW()
+      WHERE status IN ('active', 'expired')
+        AND id IN (
+          SELECT DISTINCT member_id
+          FROM memberships
+          WHERE status = 'active'
+            AND expiry_date < NOW() - INTERVAL '2 months'
+        )
+    `;
+    // Also mark ordinary expired (within 2-month grace) — keeps status = 'expired'
+    await sql`
+      UPDATE members
+      SET status = 'expired', updated_at = NOW()
+      WHERE status = 'active'
+        AND id IN (
+          SELECT DISTINCT member_id
+          FROM memberships
+          WHERE status = 'active'
+            AND expiry_date < NOW()
+            AND expiry_date >= NOW() - INTERVAL '2 months'
+        )
+    `;
+    // Re-activate members whose active membership hasn't expired yet
+    await sql`
+      UPDATE members
+      SET status = 'active', updated_at = NOW()
+      WHERE status IN ('expired')
+        AND id IN (
+          SELECT DISTINCT member_id
+          FROM memberships
+          WHERE status = 'active'
+            AND expiry_date >= NOW()
+        )
+    `;
+  } catch (error) {
+    console.error('[Database] Error in checkAndSuspendExpiredMembers:', error);
   }
 }
 
