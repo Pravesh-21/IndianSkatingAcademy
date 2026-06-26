@@ -49,7 +49,7 @@ export default function Navigation() {
     { href: '/programs', label: 'Programs' },
     { href: '/locations', label: 'Locations' },
     { href: '/join', label: 'Enquiry' },
-    { href: '/admission', label: 'Admission', highlight: true },
+    { href: '/admission', label: 'Join', highlight: true },
   ];
 
   return (
